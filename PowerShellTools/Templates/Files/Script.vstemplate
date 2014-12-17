@@ -1,0 +1,14 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>Script.ps1</DefaultName>
+    <Name>PowerShell Script</Name>
+    <Description>An empty PowerShell script.</Description>
+    <ProjectType>PowerShell</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>PowerShell.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem TargetFileName="$fileinputname$.ps1" ReplaceParameters="false">Script.ps1</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

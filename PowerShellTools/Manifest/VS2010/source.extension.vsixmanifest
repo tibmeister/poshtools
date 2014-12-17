@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Vsix xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
+  <Identifier Id="Test..943d1c2b-e773-4772-98cc-6d5eb5b7ba42">
+    <Name>PowerShell Tools for Visual Studio</Name>
+    <Author>Adam Driscoll</Author>
+    <Version>0.6</Version>
+    <Description xml:space="preserve">Empty VSIX Project.</Description>
+    <Locale>1033</Locale>
+    <MoreInfoUrl>http://github.com/adamdriscoll/poshtools</MoreInfoUrl>
+    <License>License.txt</License>
+    <Icon>poshtools.png</Icon>
+    <PreviewImage>preview.png</PreviewImage>
+    <SupportedProducts>
+      <VisualStudio Version="10.0">
+        <Edition>Ultimate</Edition>
+        <Edition>Premium</Edition>
+        <Edition>Pro</Edition>
+      </VisualStudio>
+    </SupportedProducts>
+    <SupportedFrameworkRuntimeEdition MinVersion="4.0" MaxVersion="4.0" />
+  </Identifier>
+  <References />
+  <Content>
+    <VsPackage>|%CurrentProject%;PkgdefProjectOutputGroup|</VsPackage>
+    <MefComponent>|%CurrentProject%|</MefComponent>
+    <ProjectTemplate>ProjectTemplates</ProjectTemplate>
+    <ItemTemplate>ItemTemplates</ItemTemplate>
+  </Content>
+</Vsix>

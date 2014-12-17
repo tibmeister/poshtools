@@ -1,0 +1,14 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>ScriptDataFile.psd1</DefaultName>
+    <Name>PowerShell Script Data File</Name>
+    <Description>An empty PowerShell script data file.</Description>
+    <ProjectType>PowerShell</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>PowerShell.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem TargetFileName="$fileinputname$.psd1" ReplaceParameters="false">ScriptDataFile.psd1</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

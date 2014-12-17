@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="SignScript" AssemblyFile="$(PowerGUIVSXTasks)"/>
+  <UsingTask TaskName="NewModuleManifest" AssemblyFile="$(PowerGUIVSXTasks)"/>
+  <ItemGroup>
+    <PS1Files
+      Include="*.ps1"
+      />
+    <PS1Files
+      Include="*.psm1"
+          />
+  </ItemGroup>
+  <Target Name="Build">
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
+
+    <Copy SourceFiles="@(PS1Files)" DestinationFolder="$(OutDir)" >
+      <Output TaskParameter="CopiedFiles"
+                  ItemName="OutputFiles" />
+    </Copy>
+
+    <CombinePath BasePath="$(OutDir)" Paths="$(ManifestFileName)" Condition="$(CreateModule) == 'true'">
+      <Output TaskParameter="CombinedPaths" ItemName="ManifestPath"/>
+    </CombinePath>
+
+    <SignScript Certificate="$(CodeSigningCert)" Scripts="@(OutputFiles)" Condition="$(SignOutput) == 'true'" />
+    <NewModuleManifest
+        AliasesToExport="$(AliasesToExport)"
+        Author="$(Author)"
+        ClrVersion="$(ClrVersion)"
+        CmdletsToExport="$(CmdletsToExport)"
+        CompanyName="$(CompanyName)"
+        Copyright="$(Copyright)"
+        Description="$(Description)"
+        DotNetFrameworkVersion="$(DotNetFrameworkVersion)"
+        FileList="@(PS1Files)"
+        FormatsToProcess="$(FormatsToProcess)"
+        FunctionsToProcess="$(FunctionsToProcess)"
+        Guid="$(Guid)"
+        ModuleList="$(ModuleList)"
+        ModuleToProcess="$(ModuleToProcess)"
+        ModuleVersion="$(Version)"
+        NestedModules="$(NestedModules)"
+        Path="@(ManifestPath)"
+        PowerShellHostName="$(PowerShellHostName)"
+        PowerShellHostVersion="$(PowerShellHostVersion)"
+        PowerShellVersion="$(PowerShellVersion)"
+        ProcessorArchitecture="$(ProcessorArchitecture)"
+        RequiredAssemblies="$(RequiredAssemblies)"
+        RequiredModules="$(RequiredModules)"
+        ScriptsToProcess="$(ScriptsToProcess)"
+        TypesToProcess="$(TypesToProcess)"
+        VariablesToExport="$(VarialesToExport)"
+        Condition="$(CreateModule) == 'true'"
+      />
+  </Target>
+</Project>

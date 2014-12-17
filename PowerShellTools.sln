@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShellTools\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Test", "PowerShellTools.Test\PowerShellTools.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.TestAdapter", "PowerShellTools.TestAdapter\PowerShellTools.TestAdapter.csproj", "{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplWindow", "ReplWindow\ReplWindow.csproj", "{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}.Debug|x86.ActiveCfg = Debug|x86
+		{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}.Debug|x86.Build.0 = Debug|x86
+		{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}.Release|x86.ActiveCfg = Release|x86
+		{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}.Release|x86.Build.0 = Release|x86
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|x86.ActiveCfg = Debug|x86
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|x86.Build.0 = Debug|x86
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|x86.ActiveCfg = Release|x86
+		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|x86.Build.0 = Release|x86
+		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Debug|x86.Build.0 = Debug|Any CPU
+		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Release|x86.Build.0 = Release|Any CPU
+		{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}.Debug|x86.Build.0 = Debug|Any CPU
+		{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}.Release|x86.ActiveCfg = Release|Any CPU
+		{20BB6FAC-44D2-4D76-ABFE-0C1E163A1A4F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
