@@ -23,6 +23,7 @@ using PowerShellTools.DebugEngine;
 using PowerShellTools.Diagnostics;
 using PowerShellTools.LanguageService;
 using PowerShellTools.Project.PropertyPages;
+using PowerShellTools.Snippets;
 using Engine = PowerShellTools.DebugEngine.Engine;
 using MessageBox = System.Windows.MessageBox;
 
@@ -82,13 +83,7 @@ EnableCommenting = true)]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
-    [ProvideLanguageCodeExpansion(
-         typeof(PowerShellLanguageInfo),
-         "PowerShell",          // Name of language used as registry key
-         0,                               // Resource ID of localized name of language service
-         "PowerShell",        // Name of Language attribute in snippet template
-         @"%TestDocs%\Code Snippets\PowerShel\SnippetsIndex.xml",  // Path to snippets index
-         SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
+    [ProvideLanguageCodeExpansion(GuidList.PowerShellLanguage, "PowerShell", 0, "PowerShell", @"C:\Users\Adam\AppData\Local\Microsoft\VisualStudio\12.0Exp\Extensions\Adam Driscoll\PowerShell Tools for Visual Studio 2013\1.0.5\Snippets\SnippetIndex.xml" )]
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));

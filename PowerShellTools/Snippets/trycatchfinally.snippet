@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Try Catch Finally</Title>
+            <Shortcut>trycatchfinally</Shortcut>
+            <Description>Code snippet for a try\catch\finally block.</Description>
+            <Author>Adam Driscoll</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Snippet>
+            <Declarations>
+            </Declarations>
+            <References />
+          <Code Language="PowerShell">
+                <![CDATA[try
+{
+1/0
+}
+catch [DivideByZeroException]
+{
+    Write-Host "<!<SnippetDivideByZeroException>!>"
+}
+catch [System.Net.WebException],[System.Exception]
+{
+    Write-Host "<!<SnippetOtherException>!>"
+}
+finally
+{
+    Write-Host "<!<SnippetCleaningUp>!>"
+}]]>
+            </Code>  
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

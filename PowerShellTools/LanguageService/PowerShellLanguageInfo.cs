@@ -14,7 +14,7 @@ namespace PowerShellTools.LanguageService
         /// provide a code window manager so that we can have a navigation bar (actually we don't, this
         /// should be switched over to using our TextViewCreationListener instead).
         /// </summary>
-        [Guid("1C4711F1-3766-4F84-9516-43FA4169CC36")]
+        [Guid(GuidList.PowerShellLanguage)]
         internal sealed class PowerShellLanguageInfo : IVsLanguageInfo, IVsLanguageDebugInfo
         {
             private readonly IServiceProvider _serviceProvider;
