@@ -15,7 +15,7 @@
                 <Literal>
                   <ID>param1</ID>
                     <ToolTip>Function Name</ToolTip>
-                    <Default>MyFunction</Default>
+                    <Default>New-Function</Default>
                 </Literal>
                  <Literal>
                   <ID>param2</ID>
@@ -40,28 +40,27 @@
 .EXAMPLE
 <!<SnippetAnotherExample>!>
 #>
-function Verb-Noun
+function $param1$
 {
     [CmdletBinding()
     [OutputType([int])]
-    Param
+    param
     (
         # <!<SnippetParam1Help>!>
-        [Parameter(Mandatory=$true,
-        ValueFromPipelineByPropertyName=$true,Position=0)]
-        $Param1,
+        [Parameter(Mandatory=$$true, ValueFromPipelineByPropertyName=$$true,Position=0)]
+        $param2$,
 
         # <!<SnippetParam2Help>!>
-        [int]$Param2)
+        [int]$param3$)
 
         Begin
         {
-
+          
         }
 
         Process
         {
-
+          $end$
         }
 
         End

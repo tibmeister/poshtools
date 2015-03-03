@@ -8,22 +8,24 @@
             <Author>Adam Driscoll</Author>
             <SnippetTypes>
                 <SnippetType>Expansion</SnippetType>
+                <SnippetType>SurroundsWithStatement</SnippetType>
             </SnippetTypes>
         </Header>
         <Snippet>
             <Declarations>
+              <Literal>
+                <ID>param1</ID>
+                <ToolTip>Exception</ToolTip>
+                <Default>System.Exception</Default>
+              </Literal>
             </Declarations>
             <References />
           <Code Language="PowerShell">
                 <![CDATA[try
 {
-1/0
+$selected$ $end$
 }
-catch [DivideByZeroException]
-{
-    Write-Host "<!<SnippetDivideByZeroException>!>"
-}
-catch [System.Net.WebException],[System.Exception]
+catch [$param1$]
 {
     Write-Host "<!<SnippetOtherException>!>"
 }

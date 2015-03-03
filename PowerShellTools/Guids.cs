@@ -8,7 +8,6 @@ namespace PowerShellTools
     static class GuidList
     {
         public const string PowerShellLanguage = "1C4711F1-3766-4F84-9516-43FA4169CC36";
-        
 
         //Packages
         public const string PowerShellToolsPackageGuid = "58dce676-42b0-4dd6-9ee4-afbc8e582b8a";
