@@ -23,28 +23,40 @@ namespace PowerShellTools.TestAdapter
             var tests = new List<TestCase>();
             foreach (var source in sources)
             {
-                var testType = TestType.Pester;
-
-                var scriptContents = System.IO.File.ReadAllText(source);
-                if (scriptContents.StartsWith("#pester", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    testType = TestType.Pester;
+                    ProcessSource(source, discoverySink, tests, logger);
                 }
-                else if (scriptContents.StartsWith("#psate", StringComparison.OrdinalIgnoreCase))
+                catch (Exception ex)
                 {
-                    testType = TestType.PSate;
-                }
-
-                if (testType == TestType.Pester)
-                {
-                    DiscoverPesterTests(discoverySink, logger, source, tests);    
-                }
-                else if (testType == TestType.PSate)
-                {
-                    DiscoverPsateTests(discoverySink, source, tests);    
+                    SendMessage(TestMessageLevel.Error, string.Format("Error finding tests in [{0}]. {1}{2}", source, Environment.NewLine, ex), logger);
                 }
             }
             return tests;
+        }
+
+        private static void ProcessSource(string source, ITestCaseDiscoverySink discoverySink, List<TestCase> tests, IMessageLogger logger = null)
+        {
+            var testType = TestType.Pester;
+
+            var scriptContents = System.IO.File.ReadAllText(source);
+            if (scriptContents.StartsWith("#pester", StringComparison.OrdinalIgnoreCase))
+            {
+                testType = TestType.Pester;
+            }
+            else if (scriptContents.StartsWith("#psate", StringComparison.OrdinalIgnoreCase))
+            {
+                testType = TestType.PSate;
+            }
+
+            if (testType == TestType.Pester)
+            {
+                DiscoverPesterTests(discoverySink, logger, source, tests);
+            }
+            else if (testType == TestType.PSate)
+            {
+                DiscoverPsateTests(discoverySink, source, tests);
+            }
         }
 
         private static void DiscoverPesterTests(ITestCaseDiscoverySink discoverySink, IMessageLogger logger, string source,
