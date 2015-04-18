@@ -47,9 +47,9 @@
                     Margin="0,10,10,20"
                     Orientation="Horizontal">
             <Button Click="OnOkButtonClick"
-                    Content="{x:Static c:Resources.EnterButtonText}"
+                    Content="Ok"
                     IsDefault="True" />
-            <Button Content="{x:Static c:Resources.CancelButtonText}"
+            <Button Content="Cancel"
                     IsCancel="True" />
         </StackPanel>
     </Grid>

@@ -140,11 +140,6 @@ namespace PowerShellTools.TestAdapter
             var pesterPath = GetModulePath(moduleName, runContext.TestRunDirectory);
             if (String.IsNullOrEmpty(pesterPath))
             {
-                pesterPath = GetModulePath(moduleName, runContext.SolutionDirectory);
-            }
-
-            if (String.IsNullOrEmpty(pesterPath))
-            {
                 pesterPath = moduleName;
             }
 

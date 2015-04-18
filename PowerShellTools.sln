@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22711.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools", "PowerShellTools\PowerShellTools.csproj", "{456D66A8-E05E-496D-BDCE-AF24BBC12E0D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Test", "PowerShellTools.Test\PowerShellTools.Test.csproj", "{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}"
@@ -53,7 +51,6 @@ Global
 		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56CBAB0A-1CB3-416B-9F00-D2CE1372191D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF4AB4F5-6B06-4AAE-AEE7-8CAB296DB5F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,7 +70,6 @@ Global
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D5C4094D-04D7-4490-B506-22B9E9909EE4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{103C9AF2-F8A5-4BF0-A341-A43147C320AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
