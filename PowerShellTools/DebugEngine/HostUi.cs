@@ -270,8 +270,9 @@ namespace PowerShellTools.DebugEngine
         /// <returns>A PSCredential object that contains the securestring.</returns>
         public async Task<PSCredential> ReadSecureStringAsPSCredential(string message, string name)
         {
+#if !DEV11
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
+#endif
             SecureString secString = new SecureString();
             SecureStringDialogViewModel viewModel = new SecureStringDialogViewModel(message, name);
             SecureStringDialog dialog = new SecureStringDialog(viewModel);

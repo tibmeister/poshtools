@@ -9,6 +9,7 @@
         <UpgradeBackupLocation>
         </UpgradeBackupLocation>
         <OldToolsVersion>4.0</OldToolsVersion>
+        <DevVersion>DEV11</DevVersion>
       </PropertyGroup>
     </When>
     <When Condition=" '$(VisualStudioVersion)'=='12.0'  Or '$(TargetVisualStudioVersion)'=='VS120' ">
@@ -19,6 +20,7 @@
         <UpgradeBackupLocation>
         </UpgradeBackupLocation>
         <OldToolsVersion>4.0</OldToolsVersion>
+        <DevVersion>DEV12</DevVersion>
       </PropertyGroup>
     </When>
 	<When Condition=" '$(VisualStudioVersion)'=='14.0'  Or '$(TargetVisualStudioVersion)'=='VS140' ">
@@ -29,6 +31,7 @@
         <UpgradeBackupLocation>
         </UpgradeBackupLocation>
         <OldToolsVersion>4.0</OldToolsVersion>
+        <DevVersion>DEV14</DevVersion>
       </PropertyGroup>
     </When>
   </Choose>
@@ -62,7 +65,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;DEV11</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;$(DevVersion)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -70,7 +73,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;DEV11</DefineConstants>
+    <DefineConstants>TRACE;$(DevVersion)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

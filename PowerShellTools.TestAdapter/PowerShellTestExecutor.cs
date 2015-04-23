@@ -138,11 +138,12 @@ namespace PowerShellTools.TestAdapter
         protected string FindModule(string moduleName, IRunContext runContext)
         {
             var pesterPath = GetModulePath(moduleName, runContext.TestRunDirectory);
+#if !DEV11
             if (String.IsNullOrEmpty(pesterPath))
             {
                 pesterPath = GetModulePath(moduleName, runContext.SolutionDirectory);
             }
-
+#endif
             if (String.IsNullOrEmpty(pesterPath))
             {
                 pesterPath = moduleName;

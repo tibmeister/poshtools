@@ -83,7 +83,9 @@ namespace PowerShellTools.Test.TestAdapter
             ";
 
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(TestContext.TestDeploymentDir);
+#endif
 
             var testFile = WriteTestFile("PSate||Test||Blah", testScript);
 
@@ -104,7 +106,9 @@ namespace PowerShellTools.Test.TestAdapter
             ";
 
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(TestContext.TestDeploymentDir);
+#endif
 
             var testFile = WriteTestFile("PSate||Test||Blah", testScript);
 

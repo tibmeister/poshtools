@@ -63,7 +63,9 @@ namespace PowerShellTools.Test.TestAdapter
         public void ShouldReturnFailureIfCantFindPesterModule()
         {
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir("1.0.0"));
+#endif
 
             var testCase = WriteTestFile("Pester||Test||Blah||Should pass", String.Empty);
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
@@ -140,7 +142,9 @@ namespace PowerShellTools.Test.TestAdapter
             ";
 
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
+#endif
 
             var testCase = WriteTestFile("Pester||Test||Blah||Should pass", testScript); 
             var result = _executor.RunTest(_powerShell, testCase, _runContext.Object);
@@ -161,7 +165,9 @@ namespace PowerShellTools.Test.TestAdapter
             ";
 
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
+#endif
 
             var testFile = WriteTestFile("Pester||Test||Blah||Should fail",testScript);
 
@@ -185,7 +191,9 @@ namespace PowerShellTools.Test.TestAdapter
             ";
 
             _runContext.Setup(m => m.TestRunDirectory).Returns(TestContext.TestDeploymentDir);
+#if !DEV11
             _runContext.Setup(m => m.SolutionDirectory).Returns(GetModuleDir(pesterVersion));
+#endif
 
             var testFile = WriteTestFile("Pester||Test||Blah||Should fail", testScript);
 

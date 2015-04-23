@@ -359,10 +359,12 @@ namespace PowerShellTools.Intellisense
             {
                 return ((VSConstants.VSStd11CmdID)commandId).ToString();
             }
+#if !DEV11
             else if (commandGroup == VSConstants.VsStd12)
             {
                 return ((VSConstants.VSStd12CmdID)commandId).ToString();
             }
+#endif
 
             // No Dev14 here, cause we want to continue to work before Dev14!
 #endif
