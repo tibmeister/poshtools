@@ -17,6 +17,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using VSLangProj;
+using Microsoft.VisualStudio.Package.Automation;
 
 namespace Microsoft.VisualStudioTools.Project.Automation
 {
@@ -50,8 +51,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation
         {
             get
             {
-                throw new NotImplementedException();
-                //return new OABuildManager(this.project);
+                return new OABuildManager(this.project);
             }
         }
 
