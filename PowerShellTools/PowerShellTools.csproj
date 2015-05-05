@@ -405,6 +405,7 @@
     <Compile Include="Project\SharedProject\Automation\OAReferenceFolderItem.cs" />
     <Compile Include="Project\SharedProject\Automation\OAReferenceItem.cs" />
     <Compile Include="Project\SharedProject\Automation\VSProject\OAAssemblyReference.cs" />
+    <Compile Include="Project\SharedProject\Automation\VSProject\OABuildManager.cs" />
     <Compile Include="Project\SharedProject\Automation\VSProject\OAProjectReference.cs" />
     <Compile Include="Project\SharedProject\Automation\VSProject\OAReferenceBase.cs" />
     <Compile Include="Project\SharedProject\Automation\VSProject\OAReferences.cs" />
