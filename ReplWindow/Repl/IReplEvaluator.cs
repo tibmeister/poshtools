@@ -16,10 +16,11 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
 
-namespace PowerShellTools.Repl {
+namespace PowerShellTools.Repl
+{
 #if INTERACTIVE_WINDOW
     using IReplWindow = IInteractiveWindow;
-#elif POWERSHELL 
+#elif POWERSHELL
     using IReplWindow = IPowerShellReplWindow;
 #endif
 
@@ -82,7 +83,7 @@ namespace PowerShellTools.Repl {
         /// <param name="text">The code snippet to execute.</param>
         /// <returns>Task that completes the execution.</returns>
         Task<ExecutionResult> ExecuteText(string text);
-        
+
         void ExecuteFile(string filename);
 
         /// <summary>
@@ -97,17 +98,17 @@ namespace PowerShellTools.Repl {
         /// <summary>
         /// Aborts the current running command.
         /// </summary>
-        void AbortCommand();
+        Task<ExecutionResult> AbortCommand();
 
         /// <summary>
         /// Enter remote powershell session.
         /// </summary>
-        ExecutionResult EnterRemoteSession(string computerName);
+        Task<ExecutionResult> EnterRemoteSession(string computerName);
 
         /// <summary>
         /// Exit remote powershell session.
         /// </summary>
-        ExecutionResult ExitRemoteSession();
+        Task<ExecutionResult> ExitRemoteSession();
 
         /// <summary>
         /// Check if runspace contains remote session

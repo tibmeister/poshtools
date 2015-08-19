@@ -45,10 +45,17 @@ namespace PowerShellTools.Intellisense
             textBuffer.Properties.TryGetProperty<ITrackingSpan>(BufferProperties.LineUpToReplacementSpan, out lineStartToApplicableTo);
 
             var currentSnapshot = textBuffer.CurrentSnapshot;
-            var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpan.GetEndPoint(currentSnapshot).Position, 0, SpanTrackingMode.EdgeInclusive);
-            Log.DebugFormat("TrackingSpan: {0}", trackingSpan.GetText(currentSnapshot));
-            Log.DebugFormat("FilterSpan: {0}", filterSpan.GetText(currentSnapshot));
+            var trackingSpanEndPoint = trackingSpan.GetEndPoint(currentSnapshot);
 
+            // When IntelliSense for path completion is triggered in double quotes, the quotes are both part of completion, which makes the endpoint of tracking span not boudary of the final completion.
+            var endCharPoint = trackingSpanEndPoint - 1;
+            char trackingSpanEndPointChar = endCharPoint.GetChar();
+            if ( trackingSpanEndPointChar == '\"')
+            {
+                trackingSpanEndPoint = endCharPoint;
+            }
+            var filterSpan = currentSnapshot.CreateTrackingSpan(trackingSpanEndPoint, 0, SpanTrackingMode.EdgeInclusive);
+            
             var compList = new List<Completion>();
             foreach (var match in list)
             {
@@ -56,7 +63,10 @@ namespace PowerShellTools.Intellisense
                 switch (match.ResultType)
                 {
                     case CompletionResultType.ParameterName:
-                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupProperty, StandardGlyphItem.GlyphItemPublic);
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupEnum, StandardGlyphItem.GlyphItemPublic);
+                        break;
+                    case CompletionResultType.ParameterValue:
+                        glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupEnumMember, StandardGlyphItem.GlyphItemPublic);
                         break;
                     case CompletionResultType.Command:
                         glyph = _glyphs.GetGlyph(StandardGlyphGroup.GlyphGroupMethod, StandardGlyphItem.GlyphItemPublic);
@@ -104,7 +114,7 @@ namespace PowerShellTools.Intellisense
 
     internal class PowerShellCompletionSet : CompletionSet
     {
-        private readonly FilteredObservableCollection<Completion> completions;
+        private readonly FilteredObservableCollection<Completion> _completions;
 
         internal PowerShellCompletionSet(string moniker,
                                          string displayName,
@@ -119,7 +129,7 @@ namespace PowerShellTools.Intellisense
             {
                 throw new ArgumentNullException("filterSpan");
             }
-            this.completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
+            _completions = new FilteredObservableCollection<Completion>(new ObservableCollection<Completion>(completions));
             FilterSpan = filterSpan;
             LineStartToApplicableTo = lineStartToApplicableTo;
             InitialApplicableTo = applicableTo.GetText(applicableTo.TextBuffer.CurrentSnapshot);
@@ -129,7 +139,7 @@ namespace PowerShellTools.Intellisense
         {
             get
             {
-                return completions;
+                return _completions;
             }
         }
 
@@ -150,28 +160,50 @@ namespace PowerShellTools.Intellisense
 
             if (Completions.Any(current => predicate(current)))
             {
-                completions.Filter(predicate);
+                _completions.Filter(predicate);
             }
         }
 
         public override void SelectBestMatch()
         {
             var text = FilterSpan.GetText(FilterSpan.TextBuffer.CurrentSnapshot);
+
             if (text.Length == 0)
             {
-                SelectionStatus = new CompletionSelectionStatus(null, false, false);
+                if (InitialApplicableTo.EndsWith("\\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                foreach (var current in Completions)
+                {
+                    if (current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SelectionStatus = new CompletionSelectionStatus(current, true, true);
+                        return;
+                    }
+                }
                 return;
             }
-            var num = int.MaxValue;
+            int num = int.MaxValue;
+            int matchedCount = 0;
             Completion completion = null;
             foreach (var current in Completions)
-            {
+            {               
+                string currentInsertionText = current.InsertionText;
+                if (current.InsertionText.StartsWith("\"", StringComparison.OrdinalIgnoreCase) && current.InsertionText.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
+                {
+                    currentInsertionText = currentInsertionText.Substring(1, currentInsertionText.Length - 2);
+                }
+
                 var startIndex = current.InsertionText.StartsWith(InitialApplicableTo, StringComparison.OrdinalIgnoreCase) ? this.InitialApplicableTo.Length : 0;
-                var num2 = current.InsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+                var num2 = currentInsertionText.IndexOf(text, startIndex, StringComparison.OrdinalIgnoreCase);
+
                 if (num2 != -1 && num2 < num)
                 {
                     completion = current;
                     num = num2;
+                    ++matchedCount;
                 }
             }
             if (completion == null)
@@ -189,7 +221,10 @@ namespace PowerShellTools.Intellisense
             }
             propertiesCollection.AddProperty(BufferProperties.SessionCompletionFullyMatchedStatus, isFullyMatched);
 
-            SelectionStatus = new CompletionSelectionStatus(completion, true, true);
+            bool isSelected = (matchedCount > 0);
+            bool isUnique = (matchedCount == 1);
+
+            SelectionStatus = new CompletionSelectionStatus(completion, isSelected, isUnique);
         }
     }
 }

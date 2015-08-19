@@ -141,6 +141,7 @@ namespace PowerShellTools.DebugEngine
             if ((dwFields & enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME) != 0)
             {
                 pPropertyInfo[0].bstrName = Name;
+                pPropertyInfo[0].bstrFullName = Name;
                 pPropertyInfo[0].dwFields |= enum_DEBUGPROP_INFO_FLAGS.DEBUGPROP_INFO_NAME;
             }
 
@@ -282,6 +283,7 @@ namespace PowerShellTools.DebugEngine
             for (var i = 0; i < celt; i++)
             {
                 rgelt[i].bstrName = this[(int)(i + _count)].Name;
+                rgelt[i].bstrFullName = this[(int)(i + _count)].Name;
                 rgelt[i].bstrValue = this[(int)(i + _count)].Value != null ? this[(int)(i + _count)].Value.ToString() : "$null";
                 rgelt[i].bstrType = this[(int)(i + _count)].TypeName != null ? this[(int)(i + _count)].TypeName : String.Empty;
                 rgelt[i].pProperty = this[(int)(i + _count)];

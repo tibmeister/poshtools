@@ -30,7 +30,7 @@ namespace PowerShellTools.HostService
         public bool HandleError(Exception error)
         {
             // Log the error details on server side
-            ServiceCommon.Log("PowershellHostService: {0}", error.ToString());
+            ServiceCommon.Log("PowershellHostService: {0}", error.Message.ToString());
 
             // Let the other ErrorHandler do their jobs
             return true;

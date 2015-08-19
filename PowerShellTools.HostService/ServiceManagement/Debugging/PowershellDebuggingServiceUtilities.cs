@@ -22,75 +22,75 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
     {
         // Potential TODO: Refactor this class into either a static Utilities class
 
-        private const string DteVariableName= "dte";
+        private const string DteVariableName = "dte";
 
         private void SetRunspace(Runspace runspace)
         {
             if (_runspace != null)
             {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
+                UnloadRunspace(_runspace);
             }
 
             _runspace = runspace;
-            _runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
-            _runspace.StateChanged += _runspace_StateChanged;
+            LoadRunspace(_runspace);
 
             ProvideDteVariable(_runspace);
+        }
+
+        private void LoadRunspace(Runspace runspace)
+        {
+            if (_runspace != null)
+            {
+                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                {
+                    runspace.Debugger.DebuggerStop += Debugger_DebuggerStop;
+                    runspace.Debugger.BreakpointUpdated += Debugger_BreakpointUpdated;
+                }
+
+                runspace.StateChanged += _runspace_StateChanged;
+            }
+        }
+
+        private void UnloadRunspace(Runspace runspace)
+        {
+            if (_runspace != null)
+            {
+                if (_runspace.ConnectionInfo == null || _installedPowerShellVersion >= RequiredPowerShellVersionForRemoteSessionDebugging)
+                {
+                    runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
+                    runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
+                }
+            }
+
+            runspace.StateChanged -= _runspace_StateChanged;
         }
 
         private void RefreshScopedVariable()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all local variable in scope");
-            if (_runspace.ConnectionInfo != null)
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-Variable");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _varaiables = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-Variable");
-                    pipeline.Commands.Add(command);
-                    _varaiables = pipeline.Invoke();
-                }
+                var command = new Command("Get-Variable");
+                pipeline.Commands.Add(command);
+                _varaiables = pipeline.Invoke();
             }
         }
 
         private void RefreshCallStack()
         {
             ServiceCommon.Log("Debuggger stopped, let us retreive all call stack frames");
-            if (_runspace.ConnectionInfo != null)
+            using (var pipeline = (_runspace.CreateNestedPipeline()))
             {
-                PSCommand psCommand = new PSCommand();
-                psCommand.AddScript("Get-PSCallstack");
-                var output = new PSDataCollection<PSObject>();
-                DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-                _callstack = output;
-            }
-            else
-            {
-                using (var pipeline = (_runspace.CreateNestedPipeline()))
-                {
-                    var command = new Command("Get-PSCallstack");
-                    pipeline.Commands.Add(command);
-                    _callstack = pipeline.Invoke();
-                }
+                var command = new Command("Get-PSCallstack");
+                pipeline.Commands.Add(command);
+                _callstack = pipeline.Invoke();
             }
         }
 
         private void OnTerminatingException(Exception ex)
         {
             ServiceCommon.Log("OnTerminatingException");
-            _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-            _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-            _runspace.StateChanged -= _runspace_StateChanged;
+            UnloadRunspace(_runspace);
             if (_callback != null)
             {
                 _callback.TerminatingException(new PowerShellRunTerminatingException(ex));
@@ -112,9 +112,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (_runspace != null)
             {
-                _runspace.Debugger.DebuggerStop -= Debugger_DebuggerStop;
-                _runspace.Debugger.BreakpointUpdated -= Debugger_BreakpointUpdated;
-                _runspace.StateChanged -= _runspace_StateChanged;
+                UnloadRunspace(_runspace);
             }
 
             if (_currentPowerShell != null)
@@ -132,21 +130,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             if (_callback != null)
             {
                 _callback.DebuggerFinished();
-            }
-        }
-
-        private void objects_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            var list = sender as PSDataCollection<PSObject>;
-            StringBuilder outputString = new StringBuilder();
-            foreach (PSObject obj in list)
-            {
-                outputString.AppendLine(obj.ToString());
-            }
-
-            if (_debugOutput)
-            {
-                NotifyOutputString(outputString.ToString());
             }
         }
 
@@ -232,7 +215,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void ReleaseWaitHandler()
         {
-            _debuggingCommand = DebugEngineConstants.Debugger_Stop;
+            _resumeAction = DebugEngineConstants.Debugger_Stop;
             _pausedEvent.Set();
         }
 
@@ -267,20 +250,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private RunspaceAvailability GetRunspaceAvailability(bool executionPriority)
-        {
-            if (_runspace.RunspaceAvailability != RunspaceAvailability.Available &&
-                executionPriority)
-            {
-                CommandCompletionHelper.DismissCommandCompletionListRequest();
-            }
-
-            RunspaceAvailability state = _runspace.RunspaceAvailability;
-            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
-
-            return state;
-        }
-
         private string ExecuteDebuggingCommand(string debuggingCommand, bool output)
         {
             // Need to be thread-safe here, to ensure every debugging command get processed.
@@ -291,10 +260,27 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _debugOutput = output;
                 _debugCommandOutput = string.Empty;
                 _debuggingCommand = debuggingCommand;
+                _debugCommandEvent.Reset();
                 _pausedEvent.Set();
                 _debugCommandEvent.WaitOne();
                 _debugOutput = true;
+                _debuggingCommand = string.Empty;
                 return _debugCommandOutput;
+            }
+        }
+
+        private void objects_DataAdded(object sender, DataAddedEventArgs e)
+        {
+            var list = sender as PSDataCollection<PSObject>;
+            StringBuilder outputString = new StringBuilder();
+            foreach (PSObject obj in list)
+            {
+                outputString.AppendLine(obj.ToString());
+            }
+
+            if (_debugOutput)
+            {
+                NotifyOutputString(outputString.ToString());
             }
         }
     }

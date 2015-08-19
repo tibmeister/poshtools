@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace PowerShellTools.Common.Debugging
         /// Pattern sample: Maching pattern like ". 'c:\test\test.ps1' -param1 val"
         /// </remarks>
         public const string ExecutionCommandPattern = @"^\.\s\'.*?\'.*$";
-        
+
         /// <summary>
         /// Match the script file name from execution command
         /// </summary>
@@ -84,7 +85,7 @@ param (
         }
     }
 ";
-        
+
         /// <summary>
         /// The parameter name of the function to be registered
         /// </summary>
@@ -106,11 +107,11 @@ param (
         public const string ExitRemoteSessionDefaultCommand = "Exit-PSSession";
 
         // PowerShell debugging command
-        public const string Debugger_Stop = "q";
-        public const string Debugger_StepOver = "v";
-        public const string Debugger_StepInto = "s";
-        public const string Debugger_StepOut = "o";
-        public const string Debugger_Continue = "c";
+        public const DebuggerResumeAction Debugger_Stop = DebuggerResumeAction.Stop;
+        public const DebuggerResumeAction Debugger_StepOver = DebuggerResumeAction.StepOver;
+        public const DebuggerResumeAction Debugger_StepInto = DebuggerResumeAction.StepInto;
+        public const DebuggerResumeAction Debugger_StepOut = DebuggerResumeAction.StepOut;
+        public const DebuggerResumeAction Debugger_Continue = DebuggerResumeAction.Continue;
 
         // PowerShell breakpoint command
         public const string SetPSBreakpoint = "Set-PSBreakpoint -Script \"{0}\" -Line {1}";
@@ -125,5 +126,8 @@ param (
         // {2} - CategoryInfo
         // {3} - FullyQualifiedErrorId
         public const string TerminatingErrorFormat = "[ERROR] {0}{1}[ERROR] + CategoryInfo          : {2}{1}[ERROR] + FullyQualifiedErrorId : {3}{1}";
+
+        public const string PowerShellHostProcessLogTag = "[{0}]:";
+        public const string PowerShellHostProcessLogFormat = PowerShellHostProcessLogTag + "{1}";
     }
 }

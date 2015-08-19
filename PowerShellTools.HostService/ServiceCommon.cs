@@ -1,4 +1,5 @@
 ﻿using Microsoft.PowerShell;
+using PowerShellTools.Common.Debugging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +14,9 @@ using System.Threading.Tasks;
 
 namespace PowerShellTools.HostService
 {
-    public class ServiceCommon
+    internal sealed class ServiceCommon
     {
+        public static object RunspaceLock = new object();
 
         /// <summary>
         /// TODO: Temporary logging before having logging infrastructure ready
@@ -46,7 +48,7 @@ namespace PowerShellTools.HostService
         /// <param name="msg"></param>
         private static void Log(string msg)
         {
-            Console.WriteLine(msg);
+            Console.WriteLine(string.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, Program.EndpointGuid, msg));
         }
     }
 }

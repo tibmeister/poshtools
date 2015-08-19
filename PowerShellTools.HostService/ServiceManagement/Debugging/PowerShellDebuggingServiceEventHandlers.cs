@@ -1,6 +1,8 @@
-﻿using PowerShellTools.Common.ServiceManagement.DebuggingContract;
+﻿using PowerShellTools.Common;
+using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -90,8 +92,17 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private void Debugger_DebuggerStop(object sender, DebuggerStopEventArgs e)
         {
             ServiceCommon.Log("Debugger stopped ...");
-            RefreshScopedVariable();
-            RefreshCallStack();
+
+            if (_installedPowerShellVersion < RequiredPowerShellVersionForRemoteSessionDebugging)
+            {
+                RefreshScopedVariable();
+                RefreshCallStack();
+            }
+            else
+            {
+                RefreshScopedVariable40();
+                RefreshCallStack40();
+            }
 
             ServiceCommon.LogCallbackEvent("Callback to client, and wait for debuggee to resume");
             if (e.Breakpoints.Count > 0)
@@ -123,19 +134,32 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 try
                 {
-                    PSCommand psCommand = new PSCommand();
-                    psCommand.AddScript(_debuggingCommand);
-                    psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
-                    var output = new PSDataCollection<PSObject>();
-                    output.DataAdded += objects_DataAdded;
-                    DebuggerCommandResults results = _runspace.Debugger.ProcessCommand(psCommand, output);
-
-                    ProcessDebuggingCommandResults(output);
-
-                    if (results.ResumeAction != null)
+                    if (!string.IsNullOrEmpty(_debuggingCommand))
                     {
-                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", results.ResumeAction));
-                        e.ResumeAction = results.ResumeAction.Value;
+                        if (_runspace.ConnectionInfo == null)
+                        {
+                            // local debugging
+                            var output = new Collection<PSObject>();
+
+                            using (var pipeline = (_runspace.CreateNestedPipeline()))
+                            {
+                                pipeline.Commands.AddScript(_debuggingCommand);
+                                pipeline.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                                output = pipeline.Invoke();
+                            }
+
+                            ProcessDebuggingCommandResults(output);
+                        }
+                        else
+                        {
+                            // remote session debugging
+                            ProcessRemoteDebuggingCommandResults(ExecuteDebuggingCommand());
+                        }
+                    }
+                    else
+                    {
+                        ServiceCommon.Log(string.Format("Debuggee resume action is {0}", _resumeAction));
+                        e.ResumeAction = _resumeAction;
                         resumed = true; // debugger resumed executing
                     }
                 }
@@ -149,7 +173,54 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
         }
 
-        private void ProcessDebuggingCommandResults(PSDataCollection<PSObject> output)
+        private PSDataCollection<PSObject> ExecuteDebuggingCommand()
+        {
+            PSCommand psCommand = new PSCommand();
+            psCommand.AddScript(_debuggingCommand);
+            psCommand.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+            var output = new PSDataCollection<PSObject>();
+            output.DataAdded += objects_DataAdded;
+            _runspace.Debugger.ProcessCommand(psCommand, output);
+
+            return output;
+        }
+
+        private void ProcessDebuggingCommandResults(Collection<PSObject> output)
+        {
+            if (output != null && output.Count > 0)
+            {
+                StringBuilder outputString = new StringBuilder();
+                foreach (PSObject obj in output)
+                {
+                    outputString.AppendLine(obj.ToString());
+                }
+
+                if (_debugOutput)
+                {
+                    NotifyOutputString(outputString.ToString());
+                }
+
+                var pobj = output.FirstOrDefault();
+
+                if (pobj != null && pobj.BaseObject is string)
+                {
+                    _debugCommandOutput = (string)pobj.BaseObject;
+                }
+                else if (pobj != null && pobj.BaseObject is LineBreakpoint)
+                {
+                    LineBreakpoint bp = (LineBreakpoint)pobj.BaseObject;
+                    if (bp != null)
+                    {
+                        _psBreakpointTable.Add(
+                            new PowerShellBreakpointRecord(
+                                new PowershellBreakpoint(bp.Script, bp.Line, bp.Column),
+                                bp.Id));
+                    }
+                }
+            }
+        }
+
+        private void ProcessRemoteDebuggingCommandResults(PSDataCollection<PSObject> output)
         {
             var pobj = output.FirstOrDefault();
 
@@ -205,7 +276,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 }
                 catch (Exception ex)
                 {
-                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex);
+                    ServiceCommon.Log("Failed to create local copy for downloaded file due to exception: {0}", ex.Message);
                 }
             }
         }

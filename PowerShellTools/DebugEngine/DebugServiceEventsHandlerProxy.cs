@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell;
+using PowerShellTools.ServiceManagement;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -20,7 +21,8 @@ namespace PowerShellTools.DebugEngine
         private ScriptDebugger _debugger;
         private bool _uiOutput;
 
-        public DebugServiceEventsHandlerProxy(){}
+        public DebugServiceEventsHandlerProxy()
+            : this(null, true) { }
 
         public DebugServiceEventsHandlerProxy(ScriptDebugger debugger, bool uiOutput)
         {
@@ -30,7 +32,7 @@ namespace PowerShellTools.DebugEngine
 
         public ScriptDebugger Debugger
         {
-            get 
+            get
             {
                 if (_debugger == null)
                 {
@@ -115,10 +117,12 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Ask for user input
         /// </summary>
-        /// <returns>Output string</returns>
-        public string ReadHostPrompt(string message)
+        /// <param name="message">Diaglog message</param>
+        /// <param name="name">Parameter name if any</param>
+        /// <returns>Intput string</returns>
+        public string ReadHostPrompt(string message, string name)
         {
-            return Debugger.HostUi.ReadLine(message);
+            return Debugger.HostUi.ReadLine(message, name);
         }
 
         /// <summary>
@@ -175,6 +179,20 @@ namespace PowerShellTools.DebugEngine
         {
             return Debugger.HostUi.GetPSCredential(caption, message, userName,
                 targetName, allowedCredentialTypes, options);
+        }
+
+        /// <summary>
+        /// App running in host process requiring an user input
+        /// </summary>
+        public void RequestUserInputOnStdIn()
+        {
+            string inputText = Debugger.HostUi.ReadLine(Resources.UserInputRequestMessage, string.Empty);
+
+            // Feed into stdin stream
+            if (ConnectionManager.Instance != null && ConnectionManager.Instance.HostProcess != null)
+            {
+                ConnectionManager.Instance.HostProcess.WriteHostProcessStandardInputStream(inputText);
+            }
         }
     }
 }

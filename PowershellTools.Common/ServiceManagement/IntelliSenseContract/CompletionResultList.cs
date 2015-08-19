@@ -28,6 +28,14 @@ namespace PowerShellTools.Common.ServiceManagement.IntelliSenseContract
 
         public static CompletionResultList FromCommandCompletion(CommandCompletion commandCompletion)
         {
+            if (commandCompletion == null || commandCompletion.CompletionMatches.Count == 0)
+            {
+                return new CompletionResultList()
+                {
+                    CompletionMatches = new CompletionItem[0]
+                };
+            }
+
             return new CompletionResultList()
             {
                 CompletionMatches = (from match in commandCompletion.CompletionMatches

@@ -120,14 +120,14 @@ namespace PowerShellTools.DebugEngine
             catch (DebugEngineInternalException dbgEx)
             {
                 Log.Debug(dbgEx.Message);
-                DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
+                DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
 
                 IsDebuggingCommandReady = false;
             }
             catch (Exception ex)
             {
                 Log.Debug(ex.Message);
-                DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
+                DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Stop);
 
                 IsDebuggingCommandReady = false;
                 throw;
@@ -135,7 +135,7 @@ namespace PowerShellTools.DebugEngine
             finally
             {
                 Log.Debug("Waiting for debuggee to resume.");
-                
+
                 IsDebuggingCommandReady = true;
                 RefreshPrompt();
             }
@@ -169,8 +169,9 @@ namespace PowerShellTools.DebugEngine
             if (DebuggingFinished != null)
             {
                 DebuggingFinished(this, new EventArgs());
-                _stoppingCompleteEvent.Set();
             }
+
+            _stoppingCompleteEvent.Set();
         }
 
         public void DebuggerBegin()
@@ -252,15 +253,10 @@ namespace PowerShellTools.DebugEngine
             try
             {
                 _stoppingCompleteEvent.Reset();
-                if (IsDebuggingCommandReady)
-                {
-                    DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Stop);
-                    IsDebuggingCommandReady = false;
-                }
-                else
-                {
-                    DebuggingService.Stop();
-                }
+
+                DebuggingService.Stop();
+                IsDebuggingCommandReady = false;
+
                 _stoppingCompleteEvent.WaitOne();
             }
             catch (Exception ex)
@@ -280,7 +276,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOver()
         {
             Log.Info("StepOver");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepOver);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepOver);
             IsDebuggingCommandReady = false;
         }
 
@@ -290,7 +286,7 @@ namespace PowerShellTools.DebugEngine
         public void StepInto()
         {
             Log.Info("StepInto");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepInto);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepInto);
             IsDebuggingCommandReady = false;
         }
 
@@ -300,7 +296,7 @@ namespace PowerShellTools.DebugEngine
         public void StepOut()
         {
             Log.Info("StepOut");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_StepOut);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_StepOut);
             IsDebuggingCommandReady = false;
         }
 
@@ -310,7 +306,7 @@ namespace PowerShellTools.DebugEngine
         public void Continue()
         {
             Log.Info("Continue");
-            DebuggingService.ExecuteDebuggingCommandOutDefault(DebugEngineConstants.Debugger_Continue);
+            DebuggingService.SetDebuggerResumeAction(DebugEngineConstants.Debugger_Continue);
             IsDebuggingCommandReady = false;
         }
 
@@ -324,19 +320,12 @@ namespace PowerShellTools.DebugEngine
 
             try
             {
-                if (DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() != RunspaceAvailability.Available)
-                {
-                    OutputString(this, new EventArgs<string>(Resources.ErrorPipelineBusy));
-
-                    return false;
-                }
-
                 return ExecuteInternal(commandLine);
             }
             catch (Exception ex)
             {
                 Log.Error("Failed to execute script", ex);
-                OutputString(this, new EventArgs<string>(ex.Message));
+                HostUi.VsOutputString(ex.Message);
                 return false;
             }
             finally
@@ -405,15 +394,6 @@ namespace PowerShellTools.DebugEngine
             }
         }
 
-        void objects_DataAdded(object sender, DataAddedEventArgs e)
-        {
-            if (OutputString != null)
-            {
-                var list = sender as PSDataCollection<PSObject>;
-                OutputString(this, new EventArgs<string>(list[e.Index] + Environment.NewLine));
-            }
-        }
-
         public void SetVariable(string name, string value)
         {
             try
@@ -455,6 +435,11 @@ namespace PowerShellTools.DebugEngine
             _stoppingCompleteEvent.Set();
         }
 
+        public bool IsAppRunningInPowerShellHost()
+        {
+            return DebuggingService.IsAppRunning();
+        }
+
         internal void OpenRemoteFile(string fullName)
         {
             var dte2 = (DTE80.DTE2)Package.GetGlobalService(typeof(DTE.DTE));
@@ -468,7 +453,7 @@ namespace PowerShellTools.DebugEngine
                 catch (Exception ex)
                 {
                     Log.Error("Failed to open remote file through powershell remote session", ex);
-                    OutputString(this, new EventArgs<string>(ex.Message));
+                    HostUi.VsOutputString(ex.Message);
                 }
             }
         }

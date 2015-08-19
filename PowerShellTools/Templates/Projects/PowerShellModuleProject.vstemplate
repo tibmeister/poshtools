@@ -12,7 +12,7 @@
         <Project File="PowerShellModuleProject.pssproj">
             <ProjectItem>Module.psd1</ProjectItem>
             <ProjectItem OpenInEditor="true">Module.psm1</ProjectItem>
-            <ProjectItem>Module.Test.ps1</ProjectItem>
+            <ProjectItem>Module.Tests.ps1</ProjectItem>
         </Project>
     </TemplateContent>
 </VSTemplate>

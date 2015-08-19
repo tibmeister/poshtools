@@ -8,12 +8,11 @@
             mc:Ignorable="d" 
             MinWidth="360"
             Width="360"
-            MinHeight="140"
-            Height="200"
             ResizeMode="NoResize"
             ShowInTaskbar="False"
             Title="{Binding Path=ParameterName}"
-            WindowStartupLocation="CenterOwner">
+            WindowStartupLocation="CenterOwner"
+            SizeToContent="Height">
     <shell:VsShellDialogWindow.Resources>
         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Height" Value="23" />
@@ -25,24 +24,26 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0"
                 HorizontalAlignment="Stretch"
                 Margin="10,10,10,10">
-            <Label Grid.Column="0" Content="{Binding Path=ParameterMessage}"/>
+            <TextBlock Text="{Binding Path=ParameterMessage}" TextWrapping="Wrap"/>
         </Grid>
         <Grid Grid.Row="1"
                 HorizontalAlignment="Stretch"
-                Margin="10,10,10,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="{Binding Path=ParameterName}"/>
-            <PasswordBox Name="passwordBox" Grid.Column="1" VerticalContentAlignment="Center"/>
+                VerticalAlignment="Top"
+                Margin="10,5,10,0">
+            <TextBlock Text="{Binding Path=ParameterName}" TextWrapping="Wrap"/>
         </Grid>
-        <StackPanel Grid.Row="2"
+        <Grid Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                Margin="10,10,10,10">
+            <PasswordBox Height="22" Name="passwordBox" VerticalContentAlignment="Center"/>
+        </Grid>
+        <StackPanel Grid.Row="3"
                     HorizontalAlignment="Right"
                     Margin="0,10,10,20"
                     Orientation="Horizontal">

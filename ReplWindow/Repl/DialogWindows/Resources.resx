@@ -129,4 +129,7 @@
   <data name="RemoteSessionEnterTitle" xml:space="preserve">
     <value>Entering PowerShell Remote Session</value>
   </data>
+  <data name="RemoteSessionInPreview" xml:space="preserve">
+    <value>This feature is currently in preview!</value>
+  </data>
 </root>

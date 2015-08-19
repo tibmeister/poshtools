@@ -20,6 +20,7 @@ using System.Text.RegularExpressions;
 using PowerShellTools.Common.Debugging;
 using System.Diagnostics;
 using PowerShellTools.Common.IntelliSense;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
 {
@@ -44,6 +45,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private string _debugCommandOutput;
         private bool _debugOutput;
         private static readonly Regex _rgx = new Regex(DebugEngineConstants.ExecutionCommandFileReplacePattern);
+        private DebuggerResumeAction _resumeAction;
+        private Version _installedPowerShellVersion;
+
+        /// <summary>
+        /// Minimal powershell version required for remote session debugging
+        /// </summary>
+        private static readonly Version RequiredPowerShellVersionForRemoteSessionDebugging = new Version(4, 0);
 
         public PowerShellDebuggingService()
         {
@@ -55,6 +63,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _mapRemoteToLocal = new Dictionary<string, string>();
             _psBreakpointTable = new List<PowerShellBreakpointRecord>();
             _debugOutput = true;
+            _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
             InitializeRunspace(this);
         }
 
@@ -131,32 +140,39 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             ServiceCommon.Log("Setting breakpoint ...");
             try
             {
-                using (var pipeline = (_runspace.CreatePipeline()))
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    var command = new Command("Set-PSBreakpoint");
-
-                    string file = bp.ScriptFullPath;
-                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    using (var pipeline = (_runspace.CreatePipeline()))
                     {
-                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                        var command = new Command("Set-PSBreakpoint");
+
+                        string file = bp.ScriptFullPath;
+                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        {
+                            file = _mapLocalToRemote[bp.ScriptFullPath];
+                        }
+
+                        command.Parameters.Add("Script", file);
+
+                        command.Parameters.Add("Line", bp.Line);
+
+                        pipeline.Commands.Add(command);
+
+                        breakpoints = pipeline.Invoke();
                     }
 
-                    command.Parameters.Add("Script", file);
-
-                    command.Parameters.Add("Line", bp.Line);
-
-                    pipeline.Commands.Add(command);
-
-                    breakpoints = pipeline.Invoke();
+                    var pobj = breakpoints.FirstOrDefault();
+                    if (pobj != null)
+                    {
+                        _psBreakpointTable.Add(
+                            new PowerShellBreakpointRecord(
+                                bp,
+                                ((LineBreakpoint)pobj.BaseObject).Id));
+                    }
                 }
-
-                var pobj = breakpoints.FirstOrDefault();
-                if (pobj != null)
+                else
                 {
-                    _psBreakpointTable.Add(
-                        new PowerShellBreakpointRecord(
-                            bp,
-                            ((LineBreakpoint)pobj.BaseObject).Id));
+                    ServiceCommon.Log("Setting breakpoint failed due to busy runspace.");
                 }
             }
             catch (InvalidOperationException)
@@ -177,26 +193,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 ServiceCommon.Log("Removing breakpoint ...");
 
-                using (var pipeline = (_runspace.CreatePipeline()))
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    var command = new Command("Remove-PSBreakpoint");
-
-                    string file = bp.ScriptFullPath;
-                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    using (var pipeline = (_runspace.CreatePipeline()))
                     {
-                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                        var command = new Command("Remove-PSBreakpoint");
+
+                        string file = bp.ScriptFullPath;
+                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        {
+                            file = _mapLocalToRemote[bp.ScriptFullPath];
+                        }
+
+                        command.Parameters.Add("Id", id);
+
+                        pipeline.Commands.Add(command);
+
+                        pipeline.Invoke();
                     }
 
-                    command.Parameters.Add("Id", id);
-
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
+                    foreach (var p in _psBreakpointTable.Where(b => b.PSBreakpoint.Equals(bp)))
+                    {
+                        _psBreakpointTable.Remove(p);
+                    }
                 }
-
-                foreach (var p in _psBreakpointTable.Where(b => b.PSBreakpoint.Equals(bp)))
+                else
                 {
-                    _psBreakpointTable.Remove(p);
+                    ServiceCommon.Log("Removing breakpoint failed due to busy runspace.");
                 }
             }
         }
@@ -211,25 +234,32 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (id >= 0)
             {
-                ServiceCommon.Log(string.Format("{0} breakpoint ...", enable ? "Enable" : "Disable"));
+                ServiceCommon.Log(string.Format("{0} breakpoint ...", enable ? "Enabling" : "Disabling"));
 
-                using (var pipeline = (_runspace.CreatePipeline()))
+                if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
                 {
-                    string cmd = enable ? "Enable-PSBreakpoint" : "Disable-PSBreakpoint";
-
-                    var command = new Command(cmd);
-
-                    string file = bp.ScriptFullPath;
-                    if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                    using (var pipeline = (_runspace.CreatePipeline()))
                     {
-                        file = _mapLocalToRemote[bp.ScriptFullPath];
+                        string cmd = enable ? "Enable-PSBreakpoint" : "Disable-PSBreakpoint";
+
+                        var command = new Command(cmd);
+
+                        string file = bp.ScriptFullPath;
+                        if (_runspace.ConnectionInfo != null && _mapLocalToRemote.ContainsKey(bp.ScriptFullPath))
+                        {
+                            file = _mapLocalToRemote[bp.ScriptFullPath];
+                        }
+
+                        command.Parameters.Add("Id", id);
+
+                        pipeline.Commands.Add(command);
+
+                        pipeline.Invoke();
                     }
-
-                    command.Parameters.Add("Id", id);
-
-                    pipeline.Commands.Add(command);
-
-                    pipeline.Invoke();
+                }
+                else
+                {
+                    ServiceCommon.Log(string.Format("{0} breakpoint failed due to busy runspace.", enable ? "Enabling" : "Disabling"));
                 }
             }
             else
@@ -243,26 +273,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         public void ClearBreakpoints()
         {
-            ServiceCommon.Log("ClearBreakpoints");
+            ServiceCommon.Log("Clearing all breakpoints");
 
-            IEnumerable<PSObject> breakpoints;
-
-            using (var pipeline = (_runspace.CreatePipeline()))
+            if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
             {
-                var command = new Command("Get-PSBreakpoint");
-                pipeline.Commands.Add(command);
-                breakpoints = pipeline.Invoke();
+                IEnumerable<PSObject> breakpoints;
+
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Get-PSBreakpoint");
+                    pipeline.Commands.Add(command);
+                    breakpoints = pipeline.Invoke();
+                }
+
+                if (!breakpoints.Any()) return;
+
+                using (var pipeline = (_runspace.CreatePipeline()))
+                {
+                    var command = new Command("Remove-PSBreakpoint");
+                    command.Parameters.Add("Breakpoint", breakpoints);
+                    pipeline.Commands.Add(command);
+
+                    pipeline.Invoke();
+                }
             }
-
-            if (!breakpoints.Any()) return;
-
-            using (var pipeline = (_runspace.CreatePipeline()))
+            else
             {
-                var command = new Command("Remove-PSBreakpoint");
-                command.Parameters.Add("Breakpoint", breakpoints);
-                pipeline.Commands.Add(command);
-
-                pipeline.Invoke();
+                ServiceCommon.Log("Clearing all breakpoints failed due to busy runspace.");
             }
         }
 
@@ -281,21 +318,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         /// <summary>
         /// Get runspace availability
-        /// Within execution priority, runspace will try to kill existing low priority task to free up runspace
-        /// </summary>
-        /// <returns>runspace availability enum</returns>
-        public RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority()
-        {
-            return GetRunspaceAvailability(true);
-        }
-
-        /// <summary>
-        /// Get runspace availability
         /// </summary>
         /// <returns>runspace availability enum</returns>
         public RunspaceAvailability GetRunspaceAvailability()
         {
-            return GetRunspaceAvailability(false);
+            RunspaceAvailability state = _runspace.RunspaceAvailability;
+            ServiceCommon.Log("Checking runspace availability: " + state.ToString());
+
+            return state;
         }
 
         /// <summary>
@@ -304,9 +334,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="commandLine">Command line to execute</param>
         public bool Execute(string commandLine)
         {
-            Debug.Assert(_runspace.RunspaceAvailability == RunspaceAvailability.Available, Resources.Error_PipelineBusy);
-
             ServiceCommon.Log("Start executing ps script ...");
+
+            bool commandExecuted = false;
 
             try
             {
@@ -343,32 +373,52 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                 }
 
-                using (_currentPowerShell = PowerShell.Create())
+                lock (ServiceCommon.RunspaceLock)
                 {
-                    _currentPowerShell.Runspace = _runspace;
-                    _currentPowerShell.AddScript(commandLine);
+                    if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                    {
+                        commandExecuted = true;
 
-                    _currentPowerShell.AddCommand("out-default");
-                    _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
+                        using (_currentPowerShell = PowerShell.Create())
+                        {
+                            _currentPowerShell.Runspace = _runspace;
+                            _currentPowerShell.AddScript(commandLine);
 
-                    var objects = new PSDataCollection<PSObject>();
-                    objects.DataAdded += objects_DataAdded;
+                            _currentPowerShell.AddCommand("out-default");
+                            _currentPowerShell.Commands.Commands[0].MergeMyResults(PipelineResultTypes.Error, PipelineResultTypes.Output);
 
-                    _currentPowerShell.Invoke(null, objects);
-                    error = _currentPowerShell.HadErrors;
+                            _currentPowerShell.Invoke();
+                            error = _currentPowerShell.HadErrors;
+                        }
+                    }
+                    else
+                    {
+                        ServiceCommon.Log("Execution skipped due to busy runspace.");
+                    }
                 }
 
                 return !error;
             }
+            catch (TypeLoadException ex)
+            {
+                ServiceCommon.Log("Type,  Exception: {0}", ex.Message);
+                OnTerminatingException(ex);
+
+                return false;
+            }
             catch (Exception ex)
             {
-                ServiceCommon.Log("Terminating error,  Exception: {0}", ex);              
+                ServiceCommon.Log("Terminating error,  Exception: {0}", ex.Message);
                 OnTerminatingException(ex);
+
                 return false;
             }
             finally
             {
-                DebuggerFinished();
+                if (commandExecuted)
+                {
+                    DebuggerFinished();
+                }
             }
         }
 
@@ -552,7 +602,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     }
                     catch (Exception ex)
                     {
-                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex, ex.InnerException, Environment.NewLine);
+                        ServiceCommon.Log("Property infomation is not able to be retrieved through reflection due to exception: {0} {2} InnerException: {1}", ex.Message, ex.InnerException, Environment.NewLine);
                     }
                 }
             }
@@ -663,6 +713,29 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                 return prompt;
             }
+        }
+
+        /// <summary>
+        /// Client set resume action for debugger
+        /// </summary>
+        /// <param name="resumeAction">DebuggerResumeAction</param>
+        public void SetDebuggerResumeAction(DebuggerResumeAction resumeAction)
+        {
+            lock (_executeDebugCommandLock)
+            {
+                ServiceCommon.Log("Client asks for resuming debugger");
+                _resumeAction = resumeAction;
+                _pausedEvent.Set();
+            }
+        }
+
+        /// <summary>
+        /// Check if there is an app running inside PSHost
+        /// </summary>
+        /// <returns>Boolean indicates if there is an app running</returns>
+        public bool IsAppRunning()
+        {
+            return AppRunning;
         }
 
         #endregion

@@ -130,4 +130,12 @@
   <data name="Error_PipelineBusy" xml:space="preserve">
     <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
   </data>
+  <data name="Warning_HigherVersionOnTargetRequiredForDebugging" xml:space="preserve">
+    <value>Warning: PowerShell v4.0 or later is needed on your remote computer to debug during remote script execution. You can install the latest PowerShell from: {0}</value>
+    <comment>{0} - powershell download fwlink</comment>
+  </data>
+  <data name="Warning_HigherVersionRequiredForDebugging" xml:space="preserve">
+    <value>Warning: PowerShell v4.0 or later is needed to debug during remote script execution. You can install the latest PowerShell from: {0}</value>
+    <comment>{0} - powershell download fwlink</comment>
+  </data>
 </root>

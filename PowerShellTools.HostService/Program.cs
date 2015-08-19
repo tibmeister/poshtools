@@ -20,6 +20,8 @@ namespace PowerShellTools.HostService
 
         public static int VsProcessId { get; private set; }
 
+        public static string EndpointGuid { get; private set; }
+
         [LoaderOptimization(LoaderOptimization.SingleDomain)]
         internal static int Main(string[] args)
         {
@@ -33,12 +35,12 @@ namespace PowerShellTools.HostService
 
             _processExitEvent = new AutoResetEvent(false);
 
-            string endpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
-            if (endpointGuid.Length != Guid.Empty.ToString().Length)
+            EndpointGuid = args[0].Remove(0, Constants.UniqueEndpointArg.Length);
+            if (EndpointGuid.Length != Guid.Empty.ToString().Length)
             {
                 return 1;
             }
-            
+
             int vsProcessId;
             if (!Int32.TryParse(args[1].Remove(0, Constants.VsProcessIdArg.Length),
                             NumberStyles.None,
@@ -59,7 +61,7 @@ namespace PowerShellTools.HostService
 
             // Step 1: Create the NetNamedPipeBinding. 
             // Note: the setup of the binding should be same as the client side, otherwise, the connection won't get established
-            Uri baseAddress = new Uri(Constants.ProcessManagerHostUri + endpointGuid);
+            Uri baseAddress = new Uri(Constants.ProcessManagerHostUri + EndpointGuid);
             NetNamedPipeBinding binding = new NetNamedPipeBinding(NetNamedPipeSecurityMode.None);
             binding.ReceiveTimeout = TimeSpan.MaxValue;
             binding.SendTimeout = TimeSpan.MaxValue;
@@ -120,7 +122,7 @@ namespace PowerShellTools.HostService
                 _powershellDebuggingServiceHost.Close();
                 _powershellDebuggingServiceHost = null;
             }
-            
+
             Environment.Exit(0);
             return 0;
         }

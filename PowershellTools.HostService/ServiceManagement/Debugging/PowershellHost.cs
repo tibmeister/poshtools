@@ -86,8 +86,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public override Dictionary<string, PSObject> Prompt(string caption, string message,
             Collection<FieldDescription> descriptions)
         {
-            string promptMessage = string.Format("{0}{2}{1}", caption, message, Environment.NewLine);
-            this.WriteLine(promptMessage);
+            string promptMessage = string.Empty;
+
+            if (!string.IsNullOrEmpty(message))
+            {
+                promptMessage = string.Format("{0}{2}{1}", caption, message, Environment.NewLine);
+                this.WriteLine(promptMessage);
+            }
 
             Dictionary<string, PSObject> results =
                      new Dictionary<string, PSObject>();
@@ -100,15 +105,16 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     case Constants.SecureStringFullTypeName:
                         SecureString secString = this.ReadLineAsSecureString(promptMessage, fd.Name);
                         results[fd.Name] = PSObject.AsPSObject(secString);
+                        this.WriteLine(string.Empty);
                         break;
 
                     case Constants.PSCredentialFullTypeName:
                         PSCredential psCred = this.ReadPSCredential(
                             Resources.CredentialDialogCaption,
-                            Resources.CredentialDialogMessage, 
-                            string.Empty, 
+                            Resources.CredentialDialogMessage,
                             string.Empty,
-                            PSCredentialTypes.Generic | PSCredentialTypes.Domain, 
+                            string.Empty,
+                            PSCredentialTypes.Generic | PSCredentialTypes.Domain,
                             PSCredentialUIOptions.Default);
                         if (psCred != null)
                         {
@@ -117,7 +123,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         break;
 
                     default:
-                        string userData = this.ReadLineFromUI(string.Format("{0}{2}{1}", promptMessage, fd.Name, Environment.NewLine));
+                        string userData = this.ReadLineFromUI(promptMessage, fd.Name);
                         if (userData == null)
                         {
                             return null;
@@ -207,9 +213,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private string ReadLineFromUI(string message)
         {
+            return ReadLineFromUI(message, string.Empty);
+        }
+
+        private string ReadLineFromUI(string message, string parameterName)
+        {
             if (_debuggingService.CallbackService != null)
             {
-                return _debuggingService.CallbackService.ReadHostPrompt(message);
+                return _debuggingService.CallbackService.ReadHostPrompt(message, parameterName);
             }
 
             return string.Empty;

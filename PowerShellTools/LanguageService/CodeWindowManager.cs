@@ -44,7 +44,14 @@ namespace PowerShellTools.LanguageService
         {
             _window = codeWindow;
             _textView = textView;
-            _textView.TextBuffer.Properties.TryGetProperty<IPowerShellTokenizationService>(BufferProperties.PowerShellTokenizer, out _tokenizer);
+	    if (_textView.TextBuffer.ContentType.IsOfType(PowerShellConstants.LanguageName))
+	    {
+		_textView.TextBuffer.Properties.TryGetProperty<IPowerShellTokenizationService>(BufferProperties.PowerShellTokenizer, out _tokenizer);
+	    }
+	    else
+	    {
+		_tokenizer = new PowerShellTokenizationService(_textView.TextBuffer);
+	    }
 
             Debug.Assert(_tokenizer != null, "PowerShell Tokenizer not found on textBuffer from CodeWindowManager");
 
