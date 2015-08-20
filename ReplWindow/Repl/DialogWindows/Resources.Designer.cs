@@ -95,5 +95,14 @@ namespace PowerShellTools.Repl.Repl.DialogWindows {
                 return ResourceManager.GetString("RemoteSessionEnterTitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This feature is currently in preview!.
+        /// </summary>
+        public static string RemoteSessionInPreview {
+            get {
+                return ResourceManager.GetString("RemoteSessionInPreview", resourceCulture);
+            }
+        }
     }
 }

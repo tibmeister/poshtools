@@ -16,6 +16,7 @@ namespace PowerShellTools.Project
     [ProvideEditorExtension(typeof(PowerShellEditorFactory), PowerShellConstants.PSM1File, 1000)]
     [ProvideEditorLogicalView(typeof(PowerShellEditorFactory), "{7651a702-06e5-11d1-8ebd-00a0c90f26ea}")]  //LOGVIEWID_Designer
     [ProvideEditorLogicalView(typeof(PowerShellEditorFactory), "{7651a701-06e5-11d1-8ebd-00a0c90f26ea}")]  //LOGVIEWID_Code
+    [DeveloperActivity("PowerShell", typeof(PowerShellProjectPackage))]
     [Export]
     public class PowerShellProjectPackage : CommonProjectPackage
     {

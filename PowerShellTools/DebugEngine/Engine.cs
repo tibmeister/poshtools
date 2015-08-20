@@ -116,7 +116,7 @@ namespace PowerShellTools.DebugEngine
             Debugger.TerminatingException += Debugger_TerminatingException;
             _node.Debugger = Debugger;
 
-            if (Debugger.DebuggingService.GetRunspaceAvailabilityWithExecutionPriority() == RunspaceAvailability.Available)
+            if (Debugger.DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
             {
                 Debugger.DebuggerBegin();
                 Debugger.DebuggingService.SetRunspace(Debugger.OverrideExecutionPolicy);

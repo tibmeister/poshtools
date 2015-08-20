@@ -4,6 +4,7 @@ using PowerShellTools.HostService.ServiceManagement.Debugging;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.ServiceModel;
@@ -19,54 +20,8 @@ namespace PowerShellTools.HostService.ServiceManagement
     {
         private readonly Runspace _runspace = PowerShellDebuggingService.Runspace;
         private long _requestTrigger;
-        private string _script = string.Empty;
-        private int _caretPosition;
         private IIntelliSenseServiceCallback _callback;
-
-        /// <summary>
-        /// Request trigger property
-        /// Once it was set, initellisense service starts processing the existing request in background thread
-        /// </summary>
-        public long RequestTrigger
-        {
-            get
-            {
-                return _requestTrigger;
-            }
-            set
-            {
-                _requestTrigger = value;
-                
-                if (_callback == null)
-                {
-                    _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
-                }
-                
-                // Start process the existing waiting request, should only be one
-                Task.Run(() =>
-                    {
-                        try
-                        {
-                            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList(_script, _caretPosition, _runspace);
-                            
-                            ServiceCommon.Log("Getting completion list at position {0}", _caretPosition);
-                              
-                            if (commandCompletion != null)
-                            {
-                                ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", _caretPosition);
-                                _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion));
-                            }
-
-                            // Reset trigger
-                            _requestTrigger = 0;
-                        }
-                        catch (Exception ex)
-                        {
-                            ServiceCommon.Log("Failed to retrieve the completion list per request due to exception: {0}", ex.Message);
-                        }
-                    });
-            }
-        }
+        private static object _syncLock = new object();
 
         /// <summary>
         /// Default ctor
@@ -78,7 +33,7 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// </summary>
         /// <param name="callback">Callback context object (unit test hook)</param>
         public PowerShellIntelliSenseService(IIntelliSenseServiceCallback callback)
-            :this()
+            : this()
         {
             _callback = callback;
             _runspace = RunspaceFactory.CreateRunspace();
@@ -94,19 +49,25 @@ namespace PowerShellTools.HostService.ServiceManagement
         /// <param name="caretPosition">The caret position.</param>
         /// <param name="triggerTag">Tag(incremental long) indicating the trigger sequence in client side</param>
         /// <returns>A completion results list.</returns>
-        public void RequestCompletionResults(string script, int caretPosition, long triggerTag)
+        public void RequestCompletionResults(string script, int caretPosition, int requestWindowId, long triggerTag)
         {
-            ServiceCommon.Log("Intellisense request received, caret position: {0}", _caretPosition.ToString());
+            ServiceCommon.Log("Intellisense request received, caret position: {0}", caretPosition.ToString());
 
-            if (_requestTrigger == 0 ||
-                triggerTag > RequestTrigger)
+            if (_requestTrigger == 0 || triggerTag > _requestTrigger)
             {
-                ServiceCommon.Log("Procesing request, caret position: {0}", _caretPosition.ToString());
-                _script = script;
-                _caretPosition = caretPosition;
+                ServiceCommon.Log("Procesing request, caret position: {0}", caretPosition.ToString());
                 DismissGetCompletionResults();
-                RequestTrigger = triggerTag; // triggering new request processing
+                ProcessCompletion(script, caretPosition, requestWindowId, triggerTag); // triggering new request processing
             }
+        }
+
+        /// <summary>
+        /// Suspecting this is a powershell bug, the first time you call CommandCompletion.CompleteInput, it takes much longer than usual.
+        /// We are using this dummy call during intializing to warm it up.
+        /// </summary>
+        public void GetDummyCompletionList()
+        {
+            var commandCompletion = CommandCompletionHelper.GetCommandCompletionList("Write-", 6, _runspace);
         }
 
         /// <summary>
@@ -123,6 +84,54 @@ namespace PowerShellTools.HostService.ServiceManagement
                     select new ParseErrorItem(item.Message,
                                               item.Extent.StartOffset,
                                               item.Extent.EndOffset)).ToArray();
+        }
+
+        private void ProcessCompletion(string script, int caretPosition, int requestWindowId, long triggerTag)
+        {
+            lock (_syncLock)
+            {
+                _requestTrigger = triggerTag;
+            }
+
+            if (_callback == null)
+            {
+                _callback = OperationContext.Current.GetCallbackChannel<IIntelliSenseServiceCallback>();
+            }
+
+            // Start process the existing waiting request, should only be one
+            Task.Run(() =>
+            {
+                try
+                {
+                    CommandCompletion commandCompletion = null;
+
+                    lock (ServiceCommon.RunspaceLock)
+                    {
+                        if (_runspace.RunspaceAvailability == RunspaceAvailability.Available)
+                        {
+                            commandCompletion = CommandCompletionHelper.GetCommandCompletionList(script, caretPosition, _runspace);
+                        }
+                        else
+                        {
+                            // we'll handle it when we work on giving intellisense for debugging command
+                            // for now we just simply return with null for this request to complete.
+                        }
+                    }
+
+                    ServiceCommon.LogCallbackEvent("Callback intellisense at position {0}", caretPosition);
+                    _callback.PushCompletionResult(CompletionResultList.FromCommandCompletion(commandCompletion), requestWindowId);
+
+                    // Reset trigger
+                    lock (_syncLock)
+                    {
+                        _requestTrigger = 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ServiceCommon.Log("Failed to retrieve the completion list per request due to exception: {0}", ex.Message);
+                }
+            });
         }
 
         /// <summary>

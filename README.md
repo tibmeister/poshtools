@@ -6,7 +6,6 @@ PowerShell integration for Visual Studio.
 Build status of adamdriscoll/poshtools: <a href="https://ci.appveyor.com/project/adamdriscoll/poshtools/branch/dev"><img src="https://ci.appveyor.com/api/projects/status/h9gfrh1xots5tg2y/branch/dev?svg=true"/></a><br/>
 Build status of microsoft/poshtools: [![Build status](https://ci.appveyor.com/api/projects/status/j31jw35kql84gxxm/branch/dev?svg=true)](https://ci.appveyor.com/project/PoshTools-MSFT/poshtools/branch/dev) [(What's this?)](https://github.com/adamdriscoll/poshtools/wiki/What's-with-the-Microsoft-fork%3F)
 
-I do all of this for <b><i>free</i></b>. <a href='https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2XL93PX3R3TJL'>Donations</a> help encourage my efforts!
 
 More information on <a href="http://csharpening.net/?p=1697">Adam Driscoll's blog</a>. To download the VSIX, please visit the <a href="http://visualstudiogallery.msdn.microsoft.com/c9eb3ba8-0c59-4944-9a62-6eee37294597">Visual Studio Gallery</a>. 
 
@@ -56,6 +55,6 @@ PowerShell Tools for Visual Studio currently offers the following features.
 
 <h2>Testing</h2>
 
-<h3><a href="https://github.com/pester/Pester">Pester</a> and <a href="https://github.com/jonwagner/PSate">PSate</a> Test Adapters</h3>
+<h3><a href="https://github.com/pester/Pester">Pester</a> Test Adapter</h3>
 
 <img src="http://i.imgur.com/eAXaKHV.png"/>

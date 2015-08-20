@@ -16,61 +16,61 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal class ClassifierService
     {
-        /// <summary>
-        /// Classifies the specified tokens.
-        /// </summary>
-        /// <param name="tokens"></param>
-        /// <param name="spanStart"></param>
-        /// <returns></returns>
-        internal IEnumerable<ClassificationInfo> ClassifyTokens(IEnumerable<Token> tokens, int spanStart)
-        {
-            var info = new List<ClassificationInfo>();
-            foreach (var token in tokens)
-            {
-                AddSpanForToken(token, spanStart, info);
-            }
+	/// <summary>
+	/// Classifies the specified tokens.
+	/// </summary>
+	/// <param name="tokens"></param>
+	/// <param name="spanStart"></param>
+	/// <returns></returns>
+	internal IEnumerable<ClassificationInfo> ClassifyTokens(IEnumerable<Token> tokens, int spanStart)
+	{
+	    var info = new List<ClassificationInfo>();
+	    foreach (var token in tokens)
+	    {
+		AddSpanForToken(token, spanStart, info);
+	    }
 
-            return info;
-        }
+	    return info;
+	}
 
-        private void AddSpanForToken(Token token, int spanStart, List<ClassificationInfo> classificationInfo)
-        {
-            var stringExpandableToken = token as StringExpandableToken;
-            if (stringExpandableToken != null && stringExpandableToken.NestedTokens != null)
-            {
-                AddSpansForStringToken(stringExpandableToken, spanStart, classificationInfo);
-            }
+	private void AddSpanForToken(Token token, int spanStart, List<ClassificationInfo> classificationInfo)
+	{
+	    var stringExpandableToken = token as StringExpandableToken;
+	    if (stringExpandableToken != null && stringExpandableToken.NestedTokens != null)
+	    {
+		AddSpansForStringToken(stringExpandableToken, spanStart, classificationInfo);
+	    }
 
-            ToClassificationInfo(token, token.Extent.StartOffset + spanStart, token.Extent.EndOffset - token.Extent.StartOffset, classificationInfo);
-        }
+	    ToClassificationInfo(token, token.Extent.StartOffset + spanStart, token.Extent.EndOffset - token.Extent.StartOffset, classificationInfo);
+	}
 
-        private static IClassificationType GetClassificationType(Token token)
-        {
-            var pSTokenType = PSToken.GetPSTokenType(token);
-            var classificationType = PowerShellClassifier.GetClassificationType(pSTokenType);
-            return classificationType;
-        }
+	private static IClassificationType GetClassificationType(Token token)
+	{
+	    var pSTokenType = PSToken.GetPSTokenType(token);
+	    var classificationType = PowerShellClassifier.GetClassificationType(pSTokenType);
+	    return classificationType;
+	}
 
-        private static void ToClassificationInfo(Token token, int start, int length, ICollection<ClassificationInfo> classificationInfo)
-        {
-            if (token != null && length > 0)
-            {
-                classificationInfo.Add(new ClassificationInfo(start, length, GetClassificationType(token)));
-            }
-        }
+	private static void ToClassificationInfo(Token token, int start, int length, ICollection<ClassificationInfo> classificationInfo)
+	{
+	    if (token != null && length > 0)
+	    {
+		classificationInfo.Add(new ClassificationInfo(start, length, GetClassificationType(token)));
+	    }
+	}
 
-        private void AddSpansForStringToken(StringExpandableToken stringToken, int spanStart, List<ClassificationInfo> classificationInfo)
-        {
-            var startOffset = stringToken.Extent.StartOffset;
-            foreach (var current in stringToken.NestedTokens)
-            {
-                ToClassificationInfo(stringToken, startOffset + spanStart, current.Extent.StartOffset - startOffset, classificationInfo);
-                AddSpanForToken(current, spanStart, classificationInfo);
-                startOffset = current.Extent.EndOffset;
-            }
+	private void AddSpansForStringToken(StringExpandableToken stringToken, int spanStart, List<ClassificationInfo> classificationInfo)
+	{
+	    var startOffset = stringToken.Extent.StartOffset;
+	    foreach (var current in stringToken.NestedTokens)
+	    {
+		ToClassificationInfo(stringToken, startOffset + spanStart, current.Extent.StartOffset - startOffset, classificationInfo);
+		AddSpanForToken(current, spanStart, classificationInfo);
+		startOffset = current.Extent.EndOffset;
+	    }
 
-            ToClassificationInfo(stringToken, startOffset + spanStart, stringToken.Extent.EndOffset - startOffset, classificationInfo);
-        }
+	    ToClassificationInfo(stringToken, startOffset + spanStart, stringToken.Extent.EndOffset - startOffset, classificationInfo);
+	}
     }
 
     /// <summary>
@@ -78,61 +78,61 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal class ErrorTagSpanService
     {
-        /// <summary>
-        /// Returns tag information about the errors in the buffer provided. 
-        /// </summary>
-        /// <param name="buffer">The text buffer.</param>
-        /// <param name="spanStart">The start position of the current text span.</param>
-        /// <param name="errors">The parsed errors.</param>
-        /// <returns>Error tags consumed by VS.</returns>
-        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseError> errors)
-        {
-            foreach (var parseError in errors)
-            {
-                var errorSpanStart = parseError.Extent.StartOffset + spanStart;
-                var errorSpanLength = parseError.Extent.EndOffset - parseError.Extent.StartOffset;
-                if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
+	/// <summary>
+	/// Returns tag information about the errors in the buffer provided. 
+	/// </summary>
+	/// <param name="buffer">The text buffer.</param>
+	/// <param name="spanStart">The start position of the current text span.</param>
+	/// <param name="errors">The parsed errors.</param>
+	/// <returns>Error tags consumed by VS.</returns>
+	internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseError> errors)
+	{
+	    foreach (var parseError in errors)
+	    {
+		var errorSpanStart = parseError.Extent.StartOffset + spanStart;
+		var errorSpanLength = parseError.Extent.EndOffset - parseError.Extent.StartOffset;
+		if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
 
-                if (errorSpanLength == 0)
-                {
-                    errorSpanLength = 1;
-                    if (errorSpanStart == currentSnapshot.Length)
-                    {
-                        errorSpanStart = currentSnapshot.Length - 1;
-                    }
-                }
+		if (errorSpanLength == 0)
+		{
+		    errorSpanLength = 1;
+		    if (errorSpanStart == currentSnapshot.Length)
+		    {
+			errorSpanStart = currentSnapshot.Length - 1;
+		    }
+		}
 
-                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
-            }
-        }
+		yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
+	    }
+	}
 
-        /// <summary>
-        /// Returns tag information about the errors in the buffer provided. 
-        /// </summary>
-        /// <param name="buffer">The text buffer.</param>
-        /// <param name="spanStart">The start position of the current text span.</param>
-        /// <param name="errors">The parsed errors from out-proc.</param>
-        /// <returns>Error tags consumed by VS.</returns>
-        internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseErrorItem> errors)
-        {
-            foreach (var parseError in errors)
-            {
-                var errorSpanStart = parseError.ExtentStartOffset + spanStart;
-                var errorSpanLength = parseError.ExtentEndOffset - parseError.ExtentStartOffset;
-                if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
+	/// <summary>
+	/// Returns tag information about the errors in the buffer provided. 
+	/// </summary>
+	/// <param name="buffer">The text buffer.</param>
+	/// <param name="spanStart">The start position of the current text span.</param>
+	/// <param name="errors">The parsed errors from out-proc.</param>
+	/// <returns>Error tags consumed by VS.</returns>
+	internal IEnumerable<TagInformation<ErrorTag>> TagErrorSpans(ITextSnapshot currentSnapshot, int spanStart, IEnumerable<ParseErrorItem> errors)
+	{
+	    foreach (var parseError in errors)
+	    {
+		var errorSpanStart = parseError.ExtentStartOffset + spanStart;
+		var errorSpanLength = parseError.ExtentEndOffset - parseError.ExtentStartOffset;
+		if (errorSpanStart > currentSnapshot.Length || errorSpanStart + errorSpanLength > currentSnapshot.Length) continue;
 
-                if (errorSpanLength == 0)
-                {
-                    errorSpanLength = 1;
-                    if (errorSpanStart == currentSnapshot.Length)
-                    {
-                        errorSpanStart = currentSnapshot.Length - 1;
-                    }
-                }
+		if (errorSpanLength == 0)
+		{
+		    errorSpanLength = 1;
+		    if (errorSpanStart == currentSnapshot.Length)
+		    {
+			errorSpanStart = currentSnapshot.Length - 1;
+		    }
+		}
 
-                yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
-            }
-        }
+		yield return new TagInformation<ErrorTag>(errorSpanStart, errorSpanLength, new ErrorTag(PredefinedErrorTypeNames.SyntaxError, parseError.Message));
+	    }
+	}
     }
 
     /// <summary>
@@ -140,300 +140,302 @@ namespace PowerShellTools.Classification
     /// </summary>
     internal class RegionAndBraceMatchingService
     {
-        private static char[] OpenChars { get; set; }
+	private static char[] OpenChars { get; set; }
 
-        static RegionAndBraceMatchingService()
-        {
-            OpenChars = new char[255];
-            OpenChars[125] = '{';
-            OpenChars[41] = '(';
-            OpenChars[93] = '[';
-        }
+	static RegionAndBraceMatchingService()
+	{
+	    OpenChars = new char[255];
+	    OpenChars[125] = '{';
+	    OpenChars[41] = '(';
+	    OpenChars[93] = '[';
+	}
 
-        internal void GetRegionsAndBraceMatchingInformation(string spanText, 
-                                                            int spanStart,
-                                                            IList<Token> generatedTokens, 
-                                                            out Dictionary<int, int> startBraces, 
-                                                            out Dictionary<int, int> endBraces,
-                                                            out List<TagInformation<IOutliningRegionTag>> regions)
-        {
-            endBraces = new Dictionary<int, int>();
-            startBraces = new Dictionary<int, int>();
-            regions = new List<TagInformation<IOutliningRegionTag>>();
-            var braceInformations = new List<BraceInformation>();
-            var poundRegionStart = new Stack<Token>();
-            var tokenOffset = 0;
-            var tokenIndex = 0;
-            while (tokenOffset < spanText.Length && tokenIndex < generatedTokens.Count)
-            {
-                var token = generatedTokens[tokenIndex];
-                if (token.Kind == TokenKind.Comment)
-                {
-                    var text = token.Text;
-                    if (text.Length >= 2 && text[0] == '<' && text[text.Length - 1] == '>')
-                    {
-                        var startOffset = token.Extent.StartOffset;
-                        var endOffset = token.Extent.EndOffset;
-                        AddMatch(spanStart, startBraces, endBraces, startOffset, endOffset - 1);
-                    }
-                    AddOutlinesForComment(spanStart, regions, spanText, poundRegionStart, token);
-                    tokenOffset = token.Extent.EndOffset;
-                    tokenIndex++;
-                }
-                else
-                {
-                    var stringToken = token as StringToken;
-                    if (stringToken != null)
-                    {
-                        AddBraceMatchingAndOutlinesForString(spanStart, startBraces, endBraces, regions, spanText, stringToken);
-                        tokenOffset = token.Extent.EndOffset;
-                        tokenIndex++;
-                    }
-                    else
-                    {
-                        var c = spanText[tokenOffset];
+	internal void GetRegionsAndBraceMatchingInformation(string spanText,
+							    int spanStart,
+							    IList<Token> generatedTokens,
+							    out Dictionary<int, int> startBraces,
+							    out Dictionary<int, int> endBraces,
+							    out List<TagInformation<IOutliningRegionTag>> regions)
+	{
+	    endBraces = new Dictionary<int, int>();
+	    startBraces = new Dictionary<int, int>();
+	    regions = new List<TagInformation<IOutliningRegionTag>>();
+	    var braceInformations = new List<BraceInformation>();
+	    var poundRegionStart = new Stack<Token>();
+	    var tokenOffset = 0;
+	    var tokenIndex = 0;
+	    while (tokenOffset < spanText.Length && tokenIndex < generatedTokens.Count)
+	    {
+		var token = generatedTokens[tokenIndex];
+		if (token.Kind == TokenKind.Comment)
+		{
+		    var text = token.Text;
+		    if (text.Length >= 2 && text[0] == '<' && text[text.Length - 1] == '>')
+		    {
+			var startOffset = token.Extent.StartOffset;
+			var endOffset = token.Extent.EndOffset;
+			AddMatch(spanStart, startBraces, endBraces, startOffset, endOffset - 1);
+		    }
+		    AddOutlinesForComment(spanStart, regions, spanText, poundRegionStart, token);
+		    tokenOffset = token.Extent.EndOffset;
+		    tokenIndex++;
+		}
+		else
+		{
+		    var stringToken = token as StringToken;
+		    if (stringToken != null)
+		    {
+			AddBraceMatchingAndOutlinesForString(spanStart, startBraces, endBraces, regions, spanText, stringToken);
+			tokenOffset = token.Extent.EndOffset;
+			tokenIndex++;
+		    }
+		    else
+		    {
+			var c = spanText[tokenOffset];
 
-                        if (c == '(' || c == '[' || c == '{')
-                        {
-                            OpenBrace(braceInformations, c, tokenOffset);
-                            NextCharacter(ref tokenOffset, token, ref tokenIndex);
-                            continue;
-                        }
+			if (c == '(' || c == '[' || c == '{')
+			{
+			    OpenBrace(braceInformations, c, tokenOffset);
+			    NextCharacter(ref tokenOffset, token, ref tokenIndex);
+			    continue;
+			}
 
-                        if (c == ')' || c == ']' || c == '}')
-                        {
-                            CloseBrace(spanText, spanStart, startBraces, endBraces, regions, c, braceInformations, tokenOffset);
-                            NextCharacter(ref tokenOffset, token, ref tokenIndex);
-                            continue;
-                        }
+			if (c == ')' || c == ']' || c == '}')
+			{
+			    CloseBrace(spanText, spanStart, startBraces, endBraces, regions, c, braceInformations, tokenOffset);
+			    NextCharacter(ref tokenOffset, token, ref tokenIndex);
+			    continue;
+			}
 
-                        if (c == '\\')
-                        {
-                            break;
-                        }
+			if (c == '\\')
+			{
+			    break;
+			}
 
-                        NextCharacter(ref tokenOffset, token, ref tokenIndex);
-                    }
-                }
-            }
-        }
+			NextCharacter(ref tokenOffset, token, ref tokenIndex);
+		    }
+		}
+	    }
+	}
 
-        private static void CloseBrace(string spanText, 
-                                       int spanStart, 
-                                       IDictionary<int, int> startBraces, 
-                                       IDictionary<int, int> endBraces,
-                                       ICollection<TagInformation<IOutliningRegionTag>> regions, 
-                                       char c, 
-                                       IList<BraceInformation> braceInformations, 
-                                       int tokenOffset)
-        {
-            var braceInformation = FindAndRemove(OpenChars[c], braceInformations);
-            if (!braceInformation.HasValue) return;
+	private static void CloseBrace(string spanText,
+				       int spanStart,
+				       IDictionary<int, int> startBraces,
+				       IDictionary<int, int> endBraces,
+				       ICollection<TagInformation<IOutliningRegionTag>> regions,
+				       char c,
+				       IList<BraceInformation> braceInformations,
+				       int tokenOffset)
+	{
+	    var braceInformation = FindAndRemove(OpenChars[c], braceInformations);
+	    if (!braceInformation.HasValue) return;
 
-            AddMatch(spanStart, startBraces, endBraces, braceInformation.Value.Position, tokenOffset);
-            AddRegion(spanStart, spanText, regions, braceInformation.Value.Position + 1, tokenOffset);
-        }
+	    AddMatch(spanStart, startBraces, endBraces, braceInformation.Value.Position, tokenOffset);
+	    AddRegion(spanStart, spanText, regions, braceInformation.Value.Position + 1, tokenOffset);
+	}
 
-        private static void OpenBrace(ICollection<BraceInformation> braceInformations, char c, int tokenOffset)
-        {
-            braceInformations.Add(new BraceInformation(c, tokenOffset));
-        }
+	private static void OpenBrace(ICollection<BraceInformation> braceInformations, char c, int tokenOffset)
+	{
+	    braceInformations.Add(new BraceInformation(c, tokenOffset));
+	}
 
-        private static void NextCharacter(ref int tokenOffset, Token token, ref int tokenIndex)
-        {
-            tokenOffset++;
-            if (tokenOffset > token.Extent.EndOffset)
-            {
-                tokenIndex++;
-            }
-        }
+	private static void NextCharacter(ref int tokenOffset, Token token, ref int tokenIndex)
+	{
+	    tokenOffset++;
+	    if (tokenOffset > token.Extent.EndOffset)
+	    {
+		tokenIndex++;
+	    }
+	}
 
-        private static void AddBraceMatchingAndOutlinesForString(int spanStart, 
-                                                                 IDictionary<int, int> startBraces,
-                                                                 IDictionary<int, int> endBraces, 
-                                                                 ICollection<TagInformation<IOutliningRegionTag>> regions, 
-                                                                 string text,
-                                                                 Token stringToken)
-        {
-            if (stringToken.Extent.StartLineNumber == stringToken.Extent.EndLineNumber)
-            {
-                return;
-            }
+	private static void AddBraceMatchingAndOutlinesForString(int spanStart,
+								 IDictionary<int, int> startBraces,
+								 IDictionary<int, int> endBraces,
+								 ICollection<TagInformation<IOutliningRegionTag>> regions,
+								 string text,
+								 Token stringToken)
+	{
+	    if (stringToken.Extent.StartLineNumber == stringToken.Extent.EndLineNumber)
+	    {
+		return;
+	    }
 
-            var extent = stringToken.Extent;
-            var startOffset = extent.StartOffset;
-            var endOffset = extent.EndOffset;
-            var length = endOffset - startOffset;
-            var text2 = text.Substring(startOffset, length);
-            var length2 = text2.Length;
-            if (length2 > 1 && text2[0] == text2[length2 - 1])
-            {
-                AddMatch(spanStart, startBraces, endBraces, startOffset, endOffset - 1);
-            }
-            if (text2.StartsWith("\"", StringComparison.Ordinal))
-            {
-                startOffset++;
-            }
-            else
-            {
-                if (text2.StartsWith("@\"", StringComparison.Ordinal))
-                {
-                    startOffset += 2;
-                }
-            }
-            if (text2.EndsWith("\"", StringComparison.Ordinal))
-            {
-                endOffset--;
-            }
-            else
-            {
-                if (text2.EndsWith("\"@", StringComparison.Ordinal))
-                {
-                    endOffset -= 2;
-                }
-            }
-            int num3 = startOffset;
-            int num4 = endOffset;
-            if (text2.StartsWith("@\"\r\n", StringComparison.Ordinal))
-            {
-                num3 += 2;
-            }
-            else
-            {
-                if (text2.StartsWith("@\"\n", StringComparison.Ordinal))
-                {
-                    num3++;
-                }
-            }
-            if (text2.EndsWith("\r\n\"@", StringComparison.Ordinal))
-            {
-                num4 -= 2;
-            }
-            else
-            {
-                if (text2.EndsWith("\n\"@", StringComparison.Ordinal))
-                {
-                    num4--;
-                }
-            }
-            if (num4 < num3)
-            {
-                num4 = num3;
-            }
+	    var startOffset = stringToken.Extent.StartOffset;
+	    var endOffset = stringToken.Extent.EndOffset;
+	    var text2 = text.Substring(startOffset, endOffset - startOffset);
 
-            var collapsedTooltip = text.Substring(num3, num4 - num3);
-            AddRegion(spanStart, text, regions, startOffset, endOffset, null, collapsedTooltip);
-        }
+	    if (text2.StartsWith("\"", StringComparison.Ordinal) ||
+		text2.StartsWith("\'", StringComparison.Ordinal))
+	    {
+		startOffset++;
+	    }
+	    else
+	    {
+		if (text2.StartsWith("@\"", StringComparison.Ordinal) ||
+		    text2.StartsWith("@\'", StringComparison.Ordinal))
+		{
+		    startOffset += 2;
+		}
+	    }
+	    if (text2.EndsWith("\"", StringComparison.Ordinal) ||
+		text2.EndsWith("\'", StringComparison.Ordinal))
+	    {
+		endOffset--;
+	    }
+	    else
+	    {
+		if (text2.EndsWith("\"@", StringComparison.Ordinal) ||
+		    text2.EndsWith("\'@", StringComparison.Ordinal))
+		{
+		    endOffset -= 2;
+		}
+	    }
+	    int num3 = startOffset;
+	    int num4 = endOffset;
+	    if (text2.StartsWith("@\"\r\n", StringComparison.Ordinal) ||
+		text2.StartsWith("@\'\r\n", StringComparison.Ordinal))
+	    {
+		num3 += 2;
+	    }
+	    else
+	    {
+		if (text2.StartsWith("@\"\n", StringComparison.Ordinal) ||
+		    text2.StartsWith("@\'\n", StringComparison.Ordinal))
+		{
+		    num3++;
+		}
+	    }
+	    if (text2.EndsWith("\r\n\"@", StringComparison.Ordinal) ||
+		text2.EndsWith("\r\n\'@", StringComparison.Ordinal))
+	    {
+		num4 -= 2;
+	    }
+	    else
+	    {
+		if (text2.EndsWith("\n\"@", StringComparison.Ordinal) ||
+		    text2.EndsWith("\n\'@", StringComparison.Ordinal))
+		{
+		    num4--;
+		}
+	    }
+	    if (num4 < num3)
+	    {
+		num4 = num3;
+	    }
+
+	    var collapsedTooltip = text.Substring(num3, num4 - num3);
+	    AddRegion(spanStart, text, regions, startOffset, endOffset, null, collapsedTooltip);
+	}
 
 
-        private static BraceInformation? FindAndRemove(char c, IList<BraceInformation> braces)
-        {
-            if (!braces.Any()) return null;
+	private static BraceInformation? FindAndRemove(char c, IList<BraceInformation> braces)
+	{
+	    if (!braces.Any()) return null;
 
-            for (var i = braces.Count - 1; i >= 0; i--)
-            {
-                var value = braces[i];
-                if (value.Character != c) continue;
+	    for (var i = braces.Count - 1; i >= 0; i--)
+	    {
+		var value = braces[i];
+		if (value.Character != c) continue;
 
-                braces.RemoveAt(i);
-                return value;
-            }
-            return null;
-        }
+		braces.RemoveAt(i);
+		return value;
+	    }
+	    return null;
+	}
 
-        private static void AddRegion(int spanStart, 
-                                      string text, 
-                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
-                                      int start, 
-                                      int end)
-        {
-            AddRegion(spanStart, text, regions, start, end, null, null);
-        }
+	private static void AddRegion(int spanStart,
+				      string text,
+				      ICollection<TagInformation<IOutliningRegionTag>> regions,
+				      int start,
+				      int end)
+	{
+	    AddRegion(spanStart, text, regions, start, end, null, null);
+	}
 
-        private static void AddRegion(int spanStart, 
-                                      string text, 
-                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
-                                      int start, 
-                                      int end, 
-                                      string collapsedText)
-        {
-            AddRegion(spanStart, text, regions, start, end, collapsedText, null);
-        }
+	private static void AddRegion(int spanStart,
+				      string text,
+				      ICollection<TagInformation<IOutliningRegionTag>> regions,
+				      int start,
+				      int end,
+				      string collapsedText)
+	{
+	    AddRegion(spanStart, text, regions, start, end, collapsedText, null);
+	}
 
-        private static void AddRegion(int spanStart, 
-                                      string text, 
-                                      ICollection<TagInformation<IOutliningRegionTag>> regions,
-                                      int start, 
-                                      int end, 
-                                      string collapsedText, 
-                                      string collapsedTooltip)
-        {
-            if (collapsedText == null)
-            {
-                collapsedText = "...";
-            }
+	private static void AddRegion(int spanStart,
+				      string text,
+				      ICollection<TagInformation<IOutliningRegionTag>> regions,
+				      int start,
+				      int end,
+				      string collapsedText,
+				      string collapsedTooltip)
+	{
+	    if (collapsedText == null)
+	    {
+		collapsedText = "...";
+	    }
 
-            var length = end - start;
-            if (collapsedTooltip == null)
-            {
-                collapsedTooltip = text.Substring(start, length);
-            }
-            if (text.IndexOf('\n', start, end - start) == -1)
-            {
-                return;
-            }
-            var tag = new OutliningRegionTag(false, false, collapsedText, collapsedTooltip);
-            regions.Add(new TagInformation<IOutliningRegionTag>(start + spanStart, length, tag));
-        }
+	    var length = end - start;
+	    if (collapsedTooltip == null)
+	    {
+		collapsedTooltip = text.Substring(start, length);
+	    }
+	    if (text.IndexOf('\n', start, end - start) == -1)
+	    {
+		return;
+	    }
+	    var tag = new OutliningRegionTag(false, false, collapsedText, collapsedTooltip);
+	    regions.Add(new TagInformation<IOutliningRegionTag>(start + spanStart, length, tag));
+	}
 
-        private static void AddMatch(int spanStart, 
-                                     IDictionary<int, int> startBraces, 
-                                     IDictionary<int, int> endBraces,
-                                     int start, 
-                                     int end)
-        {
-            start += spanStart;
-            end += spanStart;
-            endBraces[end] = start;
-            startBraces[start] = end;
-        }
+	private static void AddMatch(int spanStart,
+				     IDictionary<int, int> startBraces,
+				     IDictionary<int, int> endBraces,
+				     int start,
+				     int end)
+	{
+	    start += spanStart;
+	    end += spanStart;
+	    endBraces[end] = start;
+	    startBraces[start] = end;
+	}
 
-        private static void AddOutlinesForComment(int spanStart, 
-                                                  ICollection<TagInformation<IOutliningRegionTag>> regions,
-                                                  string text, 
-                                                  Stack<Token> poundRegionStart, 
-                                                  Token commentToken)
-        {
-            var commentText = commentToken.Text;
-            if (commentText.IndexOf('\n') != -1)
-            {
-                int endOffset = commentToken.Extent.EndOffset;
-                int startOffset = commentToken.Extent.StartOffset;
-                if (commentText.StartsWith("<#", StringComparison.Ordinal))
-                {
-                    startOffset += 2;
-                }
-                if (commentText.EndsWith("#>", StringComparison.Ordinal))
-                {
-                    endOffset -= 2;
-                }
-                AddRegion(spanStart, text, regions, startOffset, endOffset);
-                return;
-            }
-            if (commentText.StartsWith("#region", StringComparison.Ordinal))
-            {
-                poundRegionStart.Push(commentToken);
-                return;
-            }
-            if (commentText.StartsWith("#endregion", StringComparison.Ordinal) && poundRegionStart.Count != 0)
-            {
-                var token = poundRegionStart.Pop();
-                var regionText = token.Text;
-                var startOffset = token.Extent.StartOffset;
-                var endOffset = commentToken.Extent.EndOffset;
-                AddRegion(spanStart, text, regions, startOffset, endOffset, regionText + "...");
-            }
-        }
+	private static void AddOutlinesForComment(int spanStart,
+						  ICollection<TagInformation<IOutliningRegionTag>> regions,
+						  string text,
+						  Stack<Token> poundRegionStart,
+						  Token commentToken)
+	{
+	    var commentText = commentToken.Text;
+	    if (commentText.IndexOf('\n') != -1)
+	    {
+		int endOffset = commentToken.Extent.EndOffset;
+		int startOffset = commentToken.Extent.StartOffset;
+		if (commentText.StartsWith("<#", StringComparison.Ordinal))
+		{
+		    startOffset += 2;
+		}
+		if (commentText.EndsWith("#>", StringComparison.Ordinal))
+		{
+		    endOffset -= 2;
+		}
+		AddRegion(spanStart, text, regions, startOffset, endOffset);
+		return;
+	    }
+	    if (commentText.StartsWith("#region", StringComparison.Ordinal))
+	    {
+		poundRegionStart.Push(commentToken);
+		return;
+	    }
+	    if (commentText.StartsWith("#endregion", StringComparison.Ordinal) && poundRegionStart.Count != 0)
+	    {
+		var token = poundRegionStart.Pop();
+		var regionText = token.Text;
+		var startOffset = token.Extent.StartOffset;
+		var endOffset = commentToken.Extent.EndOffset;
+		AddRegion(spanStart, text, regions, startOffset, endOffset, regionText + "...");
+	    }
+	}
 
     }
 }

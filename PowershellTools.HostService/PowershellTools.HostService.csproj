@@ -119,6 +119,7 @@
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />

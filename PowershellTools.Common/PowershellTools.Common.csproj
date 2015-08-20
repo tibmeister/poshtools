@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Debugging\DebugEngineConstants.cs" />
+    <Compile Include="DependencyUtilities.cs" />
     <Compile Include="IntelliSense\CommandCompletionHelper.cs" />
     <Compile Include="IntelliSense\EmptyScriptExtent.cs" />
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />

@@ -23,6 +23,7 @@ namespace PowerShellTools.ServiceManagement
         private ChannelFactory<IPowershellIntelliSenseService> _intelliSenseServiceChannelFactory;
         private ChannelFactory<IPowershellDebuggingService> _debuggingServiceChannelFactory;
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
+        private PowerShellHostProcess _hostProcess;
 
         /// <summary>
         /// Event is fired when the connection exception happened.
@@ -83,6 +84,17 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
+        /// <summary>
+        /// PowerShell host process
+        /// </summary>
+        public PowerShellHostProcess HostProcess
+        {
+            get
+            {
+                return _hostProcess;
+            }
+        }
+
         private void OpenClientConnection()
         {
             lock (_syncObject)
@@ -90,13 +102,13 @@ namespace PowerShellTools.ServiceManagement
                 if (_powershellIntelliSenseService == null || _powershellDebuggingService == null)
                 {
                     EnsureCloseProcess(_process);
-                    var hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess();
-                    _process = hostProcess.Process;
+                    _hostProcess = PowershellHostProcessHelper.CreatePowershellHostProcess();
+                    _process = _hostProcess.Process;
                     _process.Exited += ConnectionExceptionHandler;
 
                     // net.pipe://localhost/UniqueEndpointGuid/{RelativeUri}
-                    var intelliSenseServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.IntelliSenseHostRelativeUri;
-                    var deubggingServiceEndPointAddress = Constants.ProcessManagerHostUri + hostProcess.EndpointGuid + "/" + Constants.DebuggingHostRelativeUri;
+                    var intelliSenseServiceEndPointAddress = Constants.ProcessManagerHostUri + _hostProcess.EndpointGuid + "/" + Constants.IntelliSenseHostRelativeUri;
+                    var deubggingServiceEndPointAddress = Constants.ProcessManagerHostUri + _hostProcess.EndpointGuid + "/" + Constants.DebuggingHostRelativeUri;
 
                     try
                     {
@@ -111,12 +123,7 @@ namespace PowerShellTools.ServiceManagement
                         _debuggingServiceChannelFactory.Closed += ConnectionExceptionHandler;
                         _debuggingServiceChannelFactory.Open();
                         _powershellDebuggingService = _debuggingServiceChannelFactory.CreateChannel();
-
-                        // Always warm up the debugging service ahead of other services in host service process
-                        if (PowerShellToolsPackage.Debugger != null)
-                        {
-                            _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
-                        }
+                        _powershellDebuggingService.SetRunspace(PowerShellToolsPackage.OverrideExecutionPolicyConfiguration);
                     }
                     catch
                     {

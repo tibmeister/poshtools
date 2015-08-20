@@ -221,7 +221,11 @@
     </Compile>
     <Compile Include="Classification\Classifier.cs" />
     <Compile Include="Classification\ClassifierServices.cs" />
+    <Compile Include="Classification\HighlightMatchedBracesFormatDefinition.cs" />
+    <Compile Include="Classification\HighlightMatchedBracesTag.cs" />
     <Compile Include="Classification\IPowerShellTokenizationService.cs" />
+    <Compile Include="Classification\PowerShellBraceMatchingTagger.cs" />
+    <Compile Include="Classification\PowerShellBraceMatchingTaggerProvider.cs" />
     <Compile Include="Classification\PowerShellClassifier.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -269,6 +273,10 @@
     <Compile Include="DebugEngine\PInvoke.cs" />
     <Compile Include="DebugEngine\PrivateReflectionDynamicObject.cs" />
     <Compile Include="DebugEngine\Profiler.cs" />
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml.cs">
+      <DependentUpon>ReadHostPromptDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DebugEngine\PromptUI\ReadHostPromptDialogViewModel.cs" />
     <Compile Include="DebugEngine\ResourceStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -285,6 +293,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="Project\DeveloperActivityAttribute.cs" />
     <Compile Include="Diagnostics\DiagnosticConfiguration.cs" />
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
       <SubType>Component</SubType>
@@ -303,15 +312,21 @@
     <Compile Include="Intellisense\PowerShellCompletionSource.cs" />
     <Compile Include="Intellisense\PowerShellCompletionSourceProvider.cs" />
     <Compile Include="LanguageService\CodeDomAstVisitor.cs" />
+    <Compile Include="Intellisense\TabCompleteSession.cs" />
+    <Compile Include="Intellisense\Utilities.cs" />
     <Compile Include="LanguageService\CodeWindowManager.cs" />
     <Compile Include="LanguageService\DebugCodeGenerator.cs" />
     <Compile Include="LanguageService\DocDataExtensions.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
-    <Compile Include="LanguageService\Indenter.cs" />
+   <!-- <Compile Include="LanguageService\Indenter.cs" /> -->
     <Compile Include="LanguageService\PowerShellCodeDomProvider.cs">
       <SubType>component</SubType>
     </Compile>
+    <Compile Include="LanguageService\IndentUtilities.cs" />
+    <Compile Include="LanguageService\PowerShellLanaguagePreferences.cs" />
+    <Compile Include="LanguageService\SmartIndent.cs" />
+    <Compile Include="LanguageService\SmartIndentProvider.cs" />
     <Compile Include="LanguageService\PowerShellLanguageInfo.cs" />
     <Compile Include="LanguageService\TextViewFilter.cs" />
     <Compile Include="LanguageService\EditFilter.cs" />
@@ -625,6 +640,7 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <EmbeddedResource Include="Resources\completionset.bmp" />
+    <Resource Include="Poshtools_128x.png" />
     <Content Include="PowerShellToolsColors.pkgdef">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -664,7 +680,7 @@
     <None Include="Templates\Files\Script.psm1" />
     <None Include="Templates\Projects\Module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
-    <None Include="Templates\Projects\Module.test.ps1" />
+    <None Include="Templates\Projects\Module.tests.ps1" />
     <None Include="Templates\Projects\PowerShellModuleProject.pssproj">
       <SubType>Designer</SubType>
     </None>
@@ -707,6 +723,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="CredentialUI\SecureStringDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DebugEngine\PromptUI\ReadHostPromptDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

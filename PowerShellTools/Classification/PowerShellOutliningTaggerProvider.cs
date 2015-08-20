@@ -6,18 +6,18 @@ using Microsoft.VisualStudio.Utilities;
 
 namespace PowerShellTools.Classification
 {
-	[TagType(typeof(IOutliningRegionTag)), ContentType("PowerShell"), Export(typeof(ITaggerProvider))]
-	internal class PowerShellOutliningTaggerProvider : ITaggerProvider
+    [TagType(typeof(IOutliningRegionTag)), ContentType("PowerShell"), Export(typeof(ITaggerProvider))]
+    internal class PowerShellOutliningTaggerProvider : ITaggerProvider
+    {
+	[Import]
+	internal IDependencyValidator _validator;
+
+	public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
 	{
-        [Import]
-        internal IDependencyValidator _validator;
+	    if (!_validator.Validate()) return null;
 
-		public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
-		{
-            if (!_validator.Validate()) return null;
-
-			Func<ITagger<T>> creator = () => new PowerShellOutliningTagger(buffer) as ITagger<T>;
-			return buffer.Properties.GetOrCreateSingletonProperty(typeof(PowerShellOutliningTagger), creator);
-		}
+	    Func<ITagger<T>> creator = () => new PowerShellOutliningTagger(buffer) as ITagger<T>;
+	    return buffer.Properties.GetOrCreateSingletonProperty(typeof(PowerShellOutliningTagger), creator);
 	}
+    }
 }

@@ -38,9 +38,11 @@ namespace PowerShellTools.Commands
             {
                 var launcher = new PowerShellProjectLauncher(_validator.Validate());
 
-                TextSelection sel = (TextSelection)dte2.ActiveDocument.Selection;
                 dte2.ActiveDocument.Save();
-                if (sel.TopPoint.EqualTo(sel.ActivePoint))
+
+                TextSelection sel = (TextSelection)dte2.ActiveDocument.Selection;
+                
+                if (string.IsNullOrEmpty(sel.Text)) // If the selection is completely empty, selected current line and run that.
                 {
                     sel.SelectLine();
 

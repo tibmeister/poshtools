@@ -336,4 +336,10 @@ Would you like to download now?</value>
   <data name="PowerShellToolsInitializeFailed" xml:space="preserve">
     <value>Failed to initialize PowerShell Tools for Visual Studio</value>
   </data>
+  <data name="UserInputRequestMessage" xml:space="preserve">
+    <value>Appliation asks for an input:</value>
+  </data>
+  <data name="HighlightMatchedBracesTagDisplayName" xml:space="preserve">
+    <value>Highlighted Braces for PowerShell</value>
+  </data>
 </root>

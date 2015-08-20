@@ -35,6 +35,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string ExecuteDebuggingCommandOutNull(string cmdline);
 
         [OperationContract]
+        void SetDebuggerResumeAction(DebuggerResumeAction resumeAction);
+
+        [OperationContract]
         void Stop();
 
         [OperationContract]
@@ -59,12 +62,12 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         string GetPrompt();
 
         [OperationContract]
-        RunspaceAvailability GetRunspaceAvailabilityWithExecutionPriority();
-
-        [OperationContract]
         RunspaceAvailability GetRunspaceAvailability();
 
         [OperationContract]
         int GetPSBreakpointId(PowershellBreakpoint bp);
+
+        [OperationContract]
+        bool IsAppRunning();
     }
 }

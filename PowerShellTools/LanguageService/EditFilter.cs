@@ -1,8 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Package;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
@@ -16,10 +14,10 @@ namespace PowerShellTools.LanguageService
         private readonly IEditorOperations _editorOps;
         private IOleCommandTarget _next;
 
-        public EditFilter(ITextView textView, IEditorOperations editorOps) 
+        public EditFilter(ITextView textView, IEditorOperations editorOps)
         {
             _textView = textView;
-            _textView.Properties[typeof (EditFilter)] = this;
+            _textView.Properties[typeof(EditFilter)] = this;
             _editorOps = editorOps;
         }
 

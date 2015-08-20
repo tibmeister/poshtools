@@ -34,22 +34,22 @@ namespace PowerShellTools.Intellisense
 
         [Import]
         public IEditorOperationsFactoryService EditOperationsFactory = null; // Set via MEF
-        
+
         [Import]
         public IVsEditorAdaptersFactoryService AdaptersFactory { get; set; }
-        
+
         [Import]
         public ISignatureHelpBroker SigBroker = null; // Set via MEF
-        
+
         [Import]
         public IQuickInfoBroker QuickInfoBroker = null; // Set via MEF
-        
+
         [Import]
         public IIncrementalSearchFactoryService IncrementalSearch = null; // Set via MEF
-        
+
         [Import]
         public SVsServiceProvider ServiceProvider { get; set; }
-        
+
         [Import]
         public ITextUndoHistoryRegistry UndoHistoryRegistry = null;
 

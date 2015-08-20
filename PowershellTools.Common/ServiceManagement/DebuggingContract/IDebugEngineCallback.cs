@@ -37,7 +37,7 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
         void RefreshPrompt();
 
         [OperationContract(IsOneWay = false)]
-        string ReadHostPrompt(string message);
+        string ReadHostPrompt(string message, string name);
 
         [OperationContract(IsOneWay = false)]
         PSCredential ReadSecureStringPrompt(
@@ -52,6 +52,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
             string targetName, 
             PSCredentialTypes allowedCredentialTypes, 
             PSCredentialUIOptions options);
+
+        [OperationContract(IsOneWay = false)]
+        void RequestUserInputOnStdIn();
 
         [OperationContract(IsOneWay = false)]
         void OpenRemoteFile(string fullName);

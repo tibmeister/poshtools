@@ -41,5 +41,21 @@ namespace PowerShellTools.Common
         /// This is the GUID of the Visual Studio UI Context when in PowerShell debug mode.
         /// </summary>
         public static readonly Guid PowerShellDebuggingUiContextGuid = new Guid(PowerShellDebuggingUiContextString);
+        
+        /// <summary>
+        /// PowerShell install version registry key
+        /// </summary>
+        public const string NewInstalledPowerShellRegKey = @"Software\Microsoft\PowerShell\3\PowerShellEngine";
+        public const string LegacyInstalledPowershellRegKey = @"Software\Microsoft\PowerShell\1\PowerShellEngine";
+
+        /// <summary>
+        /// PowerShell install version registry key name
+        /// </summary>
+        public const string PowerShellVersionRegKeyName = "PowerShellVersion";
+
+        /// <summary>
+        /// Latest PowerShell install link
+        /// </summary>
+        public const string PowerShellInstallFWLink = "http://go.microsoft.com/fwlink/?LinkID=524571";
     }
 }

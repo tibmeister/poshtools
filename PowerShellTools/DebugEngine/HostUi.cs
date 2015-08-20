@@ -32,6 +32,7 @@ namespace PowerShellTools.DebugEngine
     using System.Windows.Forms;
     using Microsoft.VisualStudio.Shell;
     using System.Threading.Tasks;
+    using PowerShellTools.DebugEngine.PromptUI;
 #endif
 
     /// <summary>
@@ -124,14 +125,15 @@ namespace PowerShellTools.DebugEngine
         {
             try
             {
+                string prompt = string.Empty;
+
                 if (DebuggingService != null)
                 {
-                    string prompt;
                     if (IsDebuggingCommandReady)
                     {
                         prompt = DebuggingService.ExecuteDebuggingCommandOutNull(DebugEngineConstants.GetPrompt);
                     }
-                    else
+                    else if (DebuggingService.GetRunspaceAvailability() == RunspaceAvailability.Available)
                     {
                         prompt = DebuggingService.GetPrompt();
                     }
@@ -139,7 +141,7 @@ namespace PowerShellTools.DebugEngine
                     return prompt;
                 }
 
-                return string.Empty;
+                return prompt;
             }
             catch
             {
@@ -237,10 +239,27 @@ namespace PowerShellTools.DebugEngine
         /// <summary>
         /// Read host from user input
         /// </summary>
-        /// <returns>user input string</returns>
-        public string ReadLine(string message)
+        /// <param name="message">Prompt dialog message</param>
+        /// <param name="name">Parameter Name if any</param>
+        /// <returns>User input string</returns>
+        public string ReadLine(string message, string name)
         {
-            return Interaction.InputBox(message, DebugEngineConstants.ReadHostDialogTitle);
+            string input = string.Empty;
+
+            ThreadHelper.Generic.Invoke(() =>
+            {
+                ReadHostPromptDialogViewModel viewModel = new ReadHostPromptDialogViewModel(message, name);
+                ReadHostPromptDialog dialog = new ReadHostPromptDialog(viewModel);
+
+                var ret = dialog.ShowModal();
+
+                if (ret.HasValue && ret.Value == true)
+                {
+                    input = viewModel.ParameterValue;
+                }
+            });
+
+            return input;
         }
 
         /// <summary>
@@ -258,7 +277,7 @@ namespace PowerShellTools.DebugEngine
             SecureStringDialog dialog = new SecureStringDialog(viewModel);
 
             var ret = dialog.ShowModal();
-            if(ret.HasValue && ret.Value == true)
+            if (ret.HasValue && ret.Value == true)
             {
                 secString = viewModel.SecString;
             }

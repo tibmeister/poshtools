@@ -14,25 +14,6 @@ namespace PowerShellTools.Test.IntelliSense
     [TestClass]
     public class CommentAreaUnitTests
     {
-        private AutoCompletionController _braceCompletionController;
-        private Mock<ITextView> _textView;
-        private Mock<Microsoft.VisualStudio.Text.Operations.IEditorOperations> _editorOptions;
-        private Mock<ITextUndoHistory> _undoHistory;
-        private Mock<SVsServiceProvider> _serviceProvider;
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            _textView = new Mock<ITextView>();
-            _editorOptions = new Mock<IEditorOperations>();
-            _undoHistory = new Mock<ITextUndoHistory>();
-            _serviceProvider = new Mock<SVsServiceProvider>();
-            _braceCompletionController = new AutoCompletionController(_textView.Object,
-                                                                       _editorOptions.Object,
-                                                                       _undoHistory.Object,
-                                                                       _serviceProvider.Object);
-        }
-
         [TestMethod]
         public void TestEmptyScript()
         {
@@ -102,17 +83,19 @@ namespace PowerShellTools.Test.IntelliSense
             Parser.ParseInput(script, out tokens, out errors);
 
             Mock<ITextBuffer> textBuffer = new Mock<ITextBuffer>();
-            TextBufferMockHelper(textBuffer, tokens);
-            bool actual = _braceCompletionController.IsInCommentArea(caretPosition, textBuffer.Object);
+            TextBufferMockHelper(textBuffer, script, tokens);
+            bool actual = Utilities.IsInCommentArea(caretPosition, textBuffer.Object);
 
             Assert.AreEqual(expected, actual);
         }
 
-        private void TextBufferMockHelper(Mock<ITextBuffer> textBuffer, Token[] tokens)
+        private void TextBufferMockHelper(Mock<ITextBuffer> textBuffer, string script, Token[] tokens)
         {
             PropertyCollection pc = new PropertyCollection();
             pc.AddProperty(BufferProperties.Tokens, tokens);
             textBuffer.Setup(m => m.Properties).Returns(pc);
+            textBuffer.Setup(m => m.CurrentSnapshot.Length)
+                      .Returns(() => script.Length);
         }
     }
 }

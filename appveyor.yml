@@ -18,4 +18,4 @@ assembly_info:
   file: Build\AssemblyVersion.cs
   assembly_version: '{version}'
   assembly_file_version: '{version}'
-  assembly_informational_version: '{version}-{branch}'
+  assembly_informational_version: '{version}'
