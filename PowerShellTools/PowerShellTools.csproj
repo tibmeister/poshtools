@@ -319,7 +319,7 @@
     <Compile Include="LanguageService\DocDataExtensions.cs" />
     <Compile Include="LanguageService\DropDownBarClient.cs" />
     <Compile Include="LanguageService\EditorExtensions.cs" />
-   <!-- <Compile Include="LanguageService\Indenter.cs" /> -->
+    <!-- <Compile Include="LanguageService\Indenter.cs" /> -->
     <Compile Include="LanguageService\PowerShellCodeDomProvider.cs">
       <SubType>component</SubType>
     </Compile>
@@ -634,6 +634,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ItemTemplates\PowerShell Form.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -652,6 +656,7 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <Content Include="Templates\Files\Form.vstemplate" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -675,6 +680,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="Templates\Files\Form.designer.ps1" />
+    <None Include="Templates\Files\Form.ps1" />
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
