@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace AdamDriscoll.PoshPowerTools.Designer
+namespace PowerShellTools.LanguageService
 {
     public class DebugCodeGenerator : ICodeGenerator
     {

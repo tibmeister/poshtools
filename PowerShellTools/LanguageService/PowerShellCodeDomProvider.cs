@@ -10,10 +10,9 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
-using AdamDriscoll.PoshPowerTools.Designer;
 using Microsoft.VisualStudio.Shell.Design.Serialization;
 
-namespace PoshPowerTools.Designer
+namespace PowerShellTools.LanguageService
 {
     [Export("PowerShellCodeDomProvider", typeof(CodeDomProvider))]
     class PowerShellCodeDomProvider : CodeDomProvider

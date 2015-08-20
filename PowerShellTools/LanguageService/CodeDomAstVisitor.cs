@@ -5,7 +5,7 @@ using System.Linq;
 using System.Management.Automation.Language;
 using Microsoft.VisualStudio.Shell;
 
-namespace PoshPowerTools.Designer
+namespace PowerShellTools.LanguageService
 {
     class CodeDomAstVisitor : ICustomAstVisitor
     {
