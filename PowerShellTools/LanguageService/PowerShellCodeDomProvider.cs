@@ -12,8 +12,9 @@ using System.Management.Automation.Language;
 using System.Windows.Forms;
 using AdamDriscoll.PoshPowerTools.Designer;
 using Microsoft.VisualStudio.Shell.Design.Serialization;
+using PoshPowerTools.Designer;
 
-namespace PoshPowerTools.Designer
+namespace PowerShellTools.LanguageService
 {
     [Export("PowerShellCodeDomProvider", typeof(CodeDomProvider))]
     class PowerShellCodeDomProvider : CodeDomProvider
@@ -30,9 +31,17 @@ namespace PoshPowerTools.Designer
 
         public override CodeCompileUnit Parse(TextReader codeStream)
         {
-            var textWriter = codeStream as DocDataTextReader;
-            var fileName = textWriter.GetDesignerFileName();
+            var docDataTextReader = codeStream as DocDataTextReader;
+            var fileName = docDataTextReader.GetDesignerFileName();
 
+            if (!File.Exists(fileName))
+            {
+                using (var textWriter = new StreamWriter(fileName))
+                {
+                    textWriter.WriteLine("$MainForm = New-Object System.Windows.Forms.Form");
+                }
+            }
+                
             using (var textReader = new StreamReader(fileName))
             {
                 var script = textReader.ReadToEnd();
