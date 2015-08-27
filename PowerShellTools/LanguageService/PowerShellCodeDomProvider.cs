@@ -11,7 +11,6 @@ using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell.Design.Serialization;
-using PoshPowerTools.Designer;
 
 namespace PowerShellTools.LanguageService
 {
