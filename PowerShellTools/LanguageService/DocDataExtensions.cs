@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.VisualStudio.Shell.Design.Serialization;
 
-namespace PoshPowerTools.Designer
+namespace PowerShellTools.LanguageService
 {
     public static class DocDataExtensions
     {

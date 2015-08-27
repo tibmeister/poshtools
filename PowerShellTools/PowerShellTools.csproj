@@ -117,7 +117,7 @@
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.$(VSTarget), Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Platform.VSEditor" />
-    <Reference Include="Microsoft.VisualStudio.Shell.Design, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Design, Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0">
@@ -633,6 +633,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ItemTemplates\PowerShell Form.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Manifest\$(VisualStudioVersion)\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -651,6 +655,7 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <Content Include="Templates\Files\Form.vstemplate" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -674,6 +679,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="Templates\Files\Form.designer.ps1" />
+    <None Include="Templates\Files\Form.ps1" />
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
