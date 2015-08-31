@@ -1,0 +1,22 @@
+﻿<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>Form.ps1</DefaultName>
+    <Name>PowerShell Form</Name>
+    <Description>This is a form</Description>
+    <ProjectType>PowerShell</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>PowerShellScript.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References>
+      <Reference>
+        <Assembly>System.Windows.Forms</Assembly>
+      </Reference>
+      <Reference>
+        <Assembly>System.Drawing</Assembly>
+      </Reference>
+    </References>    
+    <ProjectItem SubType="Form" TargetFileName="$fileinputname$.ps1" ReplaceParameters="true">Form.ps1</ProjectItem>
+    <ProjectItem SubType="Code" TargetFileName="$fileinputname$.ps1/$fileinputname$.designer.ps1" ReplaceParameters="true">Form.designer.ps1</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

@@ -110,6 +110,7 @@
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.$(VSTarget), Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Platform.VSEditor" />
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Design, Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0">
       <Private>False</Private>
@@ -334,6 +335,12 @@
     <Compile Include="LanguageService\BreakpointValidation\BreakpointPositionInfo.cs" />
     <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationHelper.cs" />
     <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationService.cs" />
+    <Compile Include="LanguageService\CodeDomAstVisitor.cs" />
+    <Compile Include="LanguageService\DebugCodeGenerator.cs" />
+    <Compile Include="LanguageService\DocDataExtensions.cs" />
+    <Compile Include="LanguageService\PowerShellCodeDomProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
@@ -446,6 +453,7 @@
     <Compile Include="Project\SharedProject\AssemblyReferenceNode.cs" />
     <Compile Include="Project\SharedProject\Attributes.cs" />
     <Compile Include="Project\SharedProject\Automation\AutomationScope.cs" />
+    <Compile Include="Project\SharedProject\Automation\OABuildManager.cs" />
     <Compile Include="Project\SharedProject\Automation\OAFileItem.cs" />
     <Compile Include="Project\SharedProject\Automation\OAFolderItem.cs" />
     <Compile Include="Project\SharedProject\Automation\OANavigableProjectItems.cs" />
@@ -675,6 +683,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ItemTemplates\PowerShell Form.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -695,6 +707,7 @@
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
     <None Include="Resources\WarningIcon.ico" />
     <None Include="Resources\ErrorStatus.png" />
+    <Content Include="Templates\Files\Form.vstemplate" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -721,6 +734,8 @@
     <None Include="PowerShellToolsProcessHostConsole.exe.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Templates\Files\Form.designer.ps1" />
+    <None Include="Templates\Files\Form.ps1" />
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
