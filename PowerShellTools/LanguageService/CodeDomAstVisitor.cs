@@ -91,6 +91,11 @@ namespace PowerShellTools.LanguageService
                 return VisitStatementBlock(ast as StatementBlockAst);
             }
 
+            if (ast is TypeExpressionAst)
+            {
+                return VisitTypeExpression(ast as TypeExpressionAst);
+            }
+
             return unit;
         }
 
@@ -502,17 +507,28 @@ namespace PowerShellTools.LanguageService
 
         public object VisitTypeExpression(TypeExpressionAst typeExpressionAst)
         {
-            throw new NotImplementedException();
+            var typeName = typeExpressionAst.TypeName.FullName;
+
+            return new CodeTypeReferenceExpression(typeName);
         }
 
         public object VisitMemberExpression(MemberExpressionAst memberExpressionAst)
         {
             var expression = Visit(memberExpressionAst.Expression);
 
-            var fieldRef = new CodePropertyReferenceExpression(expression as CodeExpression,
-                memberExpressionAst.Member.ToString());
+            if (expression is CodeTypeReferenceExpression)
+            {
+                var fieldRef = new CodeFieldReferenceExpression(expression as CodeExpression, memberExpressionAst.Member.ToString());
 
-            return fieldRef;
+                return fieldRef;
+            }
+            else
+            {
+                var fieldRef = new CodePropertyReferenceExpression(expression as CodeExpression,
+                    memberExpressionAst.Member.ToString());
+
+                return fieldRef;
+            }
         }
 
         public object VisitInvokeMemberExpression(InvokeMemberExpressionAst invokeMemberExpressionAst)

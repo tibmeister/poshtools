@@ -144,6 +144,16 @@ namespace PowerShellTools.LanguageService
             {
                 GenerateCodeFromDelegateCreateExpression(e as CodeDelegateCreateExpression, w);
             }
+
+            if (e is CodeTypeReferenceExpression)
+            {
+                GenerateCodeFromTypeReferenceExpression(e as CodeTypeReferenceExpression, w);
+            }
+        }
+
+        private void GenerateCodeFromTypeReferenceExpression(CodeTypeReferenceExpression e, TextWriter w)
+        {
+            w.Write("[" + e.Type.BaseType + "]");
         }
 
         private void GenerateCodeFromDelegateCreateExpression(CodeDelegateCreateExpression e, TextWriter w)
@@ -215,6 +225,11 @@ namespace PowerShellTools.LanguageService
                 }
                 w.Write("$" + e.FieldName);
             }
+            else if (e.TargetObject is CodeTypeReferenceExpression)
+            {
+                GenerateCodeFromExpression(e.TargetObject, w, o);
+                w.Write("::" + e.FieldName);
+            }
             else
             {
                 GenerateCodeFromExpression(e.TargetObject, w, o);
@@ -231,6 +246,11 @@ namespace PowerShellTools.LanguageService
                     w.Write("$MainForm.");
                 }
                 w.Write(e.PropertyName);
+            }
+            else if (e.TargetObject is CodeTypeReferenceExpression)
+            {
+                GenerateCodeFromExpression(e.TargetObject, w, o);
+                w.Write("::" + e.PropertyName);
             }
             else
             {
