@@ -10,10 +10,10 @@
   <TemplateContent>
     <References>
       <Reference>
-        <Assembly>System.Windows.Forms</Assembly>
+        <Assembly>System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</Assembly>
       </Reference>
       <Reference>
-        <Assembly>System.Drawing</Assembly>
+        <Assembly>System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</Assembly>
       </Reference>
     </References>    
     <ProjectItem SubType="Form" TargetFileName="$fileinputname$.ps1" ReplaceParameters="true">Form.ps1</ProjectItem>
