@@ -391,20 +391,22 @@
         <StackPanel x:Name="ButtonsPanel"
                    Grid.Row="5"
                    Margin="10">
-            <StackPanel 
+            <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Auto">
+                <StackPanel Margin="0 0 0 5"
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right">
-                <Button x:Name="DetailsButton"
+                    <Button x:Name="DetailsButton"
                         Content="Details..."
                         Command="{Binding ViewDetailsCommand}" Margin="0 0 5 0" />
-                <Button x:Name="CopyButton"
+                    <Button x:Name="CopyButton"
                         Content="Copy"
                         Command="{Binding CopyCommand}" Margin="0 0 5 0" />
-                <Button x:Name="CancelButton"
+                    <Button x:Name="CancelButton"
                         IsDefault="True"
                         Content="Back"
                         Command="{Binding CancelCommand}" Margin="0 0 0 0" />
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </StackPanel>
 
     </Grid>

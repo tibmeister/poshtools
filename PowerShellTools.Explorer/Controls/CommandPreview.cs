@@ -15,7 +15,7 @@ namespace PowerShellTools.Explorer
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            CommandPreview item = e.Source as CommandPreview;
+            TextBlock item = e.OriginalSource as TextBlock;
 
             if (item != null && e.LeftButton == MouseButtonState.Pressed)
             {
