@@ -5,6 +5,8 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
+using System.Reflection;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using EnvDTE80;
@@ -22,6 +24,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         // Potential TODO: Refactor this class into either a static Utilities class
 
         private const string DteVariableName = "dte";
+        private const string ProfileVariableName = "profile";
 
         private void SetRunspace(Runspace runspace)
         {
@@ -153,29 +156,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _runspace = RunspaceFactory.CreateRunspace(psHost, iss);
             _runspace.Open();
 
-            LoadProfile();
+            ProvideProfileVariable();
             ServiceCommon.Log("Done initializing runspace");
-        }
-
-        private void LoadProfile()
-        {
-            ServiceCommon.Log("Loading PowerShell Profile");
-            using (PowerShell ps = PowerShell.Create())
-            {
-                var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                var windowsPowerShell = Path.Combine(myDocuments, "WindowsPowerShell");
-                var profile = Path.Combine(windowsPowerShell, "PoshTools_profile.ps1");
-
-                var fi = new FileInfo(profile);
-                if (!fi.Exists)
-                {
-                    return;
-                }
-
-                ps.Runspace = _runspace;
-                ps.AddScript(". '" + profile + "'");
-                ps.Invoke();
-            }
         }
 
         private void SetupExecutionPolicy()
@@ -252,13 +234,38 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         // We want to make $dte constant so that it can't be overridden; similar to the $psISE analog
 
                         PSVariable dteVar = new PSVariable(DteVariableName, dte, ScopedItemOptions.Constant);
-
                         runspace.SessionStateProxy.PSVariable.Set(dteVar);
                     }
                     else
                     {
                         ServiceCommon.Log("Dte object not found.");
                     }
+                }
+            }
+        }
+
+        private static void ProvideProfileVariable()
+        {
+            if (_runspace.ConnectionInfo == null)
+            {
+                // Provide profile as PS variable if not yet defined
+                if (_runspace.SessionStateProxy.PSVariable.Get(ProfileVariableName) == null)
+                {
+                    ServiceCommon.Log("Providing $profile variable to the local runspace.");
+
+                    string psHome = (string)_runspace.SessionStateProxy.PSVariable.Get("PsHome").Value;
+                    string windowsPowerShell = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "WindowsPowerShell");
+
+                    PSObject profile = new PSObject(Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellToolsProfileFileName));
+
+                    // 1. All Users, All Hosts, 2. All Users, Current Host, 3. Current User All Hosts, 4. Current User Current Host
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[0][0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfiles[0][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[1][0], Path.Combine(psHome, DebugEngineConstants.PowerShellProfiles[1][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[2][0], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfiles[2][1])));
+                    profile.Members.Add(new PSNoteProperty(DebugEngineConstants.PowerShellProfiles[3][0], Path.Combine(windowsPowerShell, DebugEngineConstants.PowerShellProfiles[3][1])));
+
+                    PSVariable profileVar = new PSVariable(ProfileVariableName, profile, ScopedItemOptions.Constant);
+                    _runspace.SessionStateProxy.PSVariable.Set(profileVar);
                 }
             }
         }
@@ -389,7 +396,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <param name="powerShell">This should be an already instanstiated PowerShell object, and should be inside of a using. If
         /// powerShell is null, method will return without performing any action.</param>
         /// <param name="remoteName">Machine to connect to.</param>
-        private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName, bool useSSL)
+        private void EnterCredentialedRemoteSession(PowerShell powerShell, string remoteName, int port, bool useSSL)
         {
             if (powerShell == null)
             {
@@ -403,12 +410,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 return;
             }
 
-            string port = remoteName.Split(':').ElementAtOrDefault(1);
-
             PSCommand enterSession = new PSCommand();
             enterSession.AddCommand("Enter-PSSession").AddParameter("ComputerName", remoteName).AddParameter("Credential", _savedCredential);
 
-            if (port != null)
+            if (port != -1)
             {
                 // check for user specified port
                 enterSession.AddParameter("-Port", port);

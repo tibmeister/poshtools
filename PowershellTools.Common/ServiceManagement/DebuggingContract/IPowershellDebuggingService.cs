@@ -100,6 +100,9 @@ namespace PowerShellTools.Common.ServiceManagement.DebuggingContract
 
         [OperationContract]
         string GetTrueFileName(string file);
+
+        [OperationContract]
+        void LoadProfiles();
     }
 
 }

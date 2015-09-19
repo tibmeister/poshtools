@@ -11,8 +11,8 @@
     <Tags>PowerShell</Tags>
   </Metadata>
   <Installation InstalledByMsi="false" AllUsers="true">
-    <InstallationTarget Version="[|%CurrentProject%;GetVsixVSTarget|]" Id="Microsoft.VisualStudio.IntegratedShell" />
-    <InstallationTarget Version="[|%CurrentProject%;GetVsixVSTarget|]" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="|%CurrentProject%;GetVsixVSTarget|" Id="Microsoft.VisualStudio.IntegratedShell" />
+    <InstallationTarget Version="|%CurrentProject%;GetVsixVSTarget|" Id="Microsoft.VisualStudio.Pro" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />

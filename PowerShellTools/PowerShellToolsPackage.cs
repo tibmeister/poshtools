@@ -304,9 +304,10 @@ namespace PowerShellTools
         {
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
 
-            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
+            var diagnosticsPage = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
+            var optionsPage = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
 
-            if (page.EnableDiagnosticLogging)
+            if (diagnosticsPage.EnableDiagnosticLogging)
             {
                 DiagnosticConfiguration.EnableDiagnostics();
             }
@@ -463,6 +464,11 @@ namespace PowerShellTools
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+
+            if (page.ShouldLoadProfiles)
+            {
+                DebuggingService.LoadProfiles();
+            }
         }
 
         internal void BitnessSettingChanged(object sender, BitnessEventArgs e)

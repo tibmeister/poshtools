@@ -127,7 +127,7 @@
     <Compile Include="ServiceManagement\Debugging\DteManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceAttachUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />

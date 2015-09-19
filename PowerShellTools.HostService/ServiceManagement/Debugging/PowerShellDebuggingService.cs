@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Remoting;
@@ -44,8 +45,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private static readonly Regex validStackLine = new Regex(DebugEngineConstants.ValidCallStackLine, RegexOptions.Compiled);
         private DebuggerResumeAction _resumeAction;
         private Version _installedPowerShellVersion;
-        private PowerShellDebuggingServiceAttachValidator _validator;
+        private PowerShellDebuggingServiceAttachUtilities _attachUtilities;
         private bool _useSSL;
+        private int _currentPid;
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -78,16 +80,6 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// </summary>
         private PSCredential _savedCredential;
 
-        /// <summary>
-        /// Used to check bitness of processes
-        /// </summary>
-        /// <param name="process"></param>
-        /// <param name="wow64Process"></param>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
-
         public PowerShellDebuggingService()
         {
             ServiceCommon.Log("Initializing debugging engine service ...");
@@ -99,8 +91,9 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             _psBreakpointTable = new HashSet<PowerShellBreakpointRecord>();
             _debugOutput = true;
             _installedPowerShellVersion = DependencyUtilities.GetInstalledPowerShellVersion();
-            _validator = new PowerShellDebuggingServiceAttachValidator(this);
+            _attachUtilities = new PowerShellDebuggingServiceAttachUtilities(this);
             _forceStop = false;
+            _currentPid = Process.GetCurrentProcess().Id;
             InitializeRunspace(this);
         }
 
@@ -171,6 +164,12 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         /// <returns>True if powershell.exe is a module of the process, false otherwise.</returns>
         public bool IsAttachable(uint pid)
         {
+            // do not let users attach to PowerShell Tools directly
+            if (pid == _currentPid)
+            {
+                return false;
+            }
+
             // make sure we are in a local scenario and that an adequate version of PowerShell is installed
             if (GetDebugScenario() == DebugScenario.Local && _installedPowerShellVersion >= RequiredPowerShellVersionForProcessAttach)
             {
@@ -180,27 +179,10 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     if (InvokeScript(_currentPowerShell, string.Format("Get-PSHostProcessInfo -Id {0}", pid)).Any())
                     {
                         var process = Process.GetProcessById((int)pid);
-                        ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
-                        bool is64Bit = false;
-
-                        try
+                        if (process != null)
                         {
-                            if (process != null)
-                            {
-                                IsWow64Process(process.Handle, out is64Bit);
-                                if (!Environment.Is64BitProcess && is64Bit)
-                                {
-                                    // cannot examine a 64 bit process' modules from a 32 bit process
-                                    return false;
-                                }
-                                return true;
-                            }
-                        }
-                        catch (Win32Exception ex)
-                        {
-                            // if a process being run as admin IsWow64Process may throw an exception
-                            ServiceCommon.Log(string.Format("Win32Exception while examining process: {1}; id: {1}; ex {2}", process.ProcessName, process.Id, ex.ToString()));
-                            return false;
+                            ServiceCommon.Log(string.Format("IsAttachable: {1}; id: {1}", process.ProcessName, process.Id));
+                            return true;
                         }
                     }
                 }
@@ -236,7 +218,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     // enter into to-attach process which will swap out the current runspace
                     _attachRequestEvent.Reset();
                     InvokeScript(_currentPowerShell, string.Format("Enter-PSHostProcess -Id {0}", pid.ToString()));
-                    result = _validator.VerifyAttachToRunspace(preScenario, _attachRequestEvent);
+                    result = _attachUtilities.VerifyAttachToRunspace(preScenario, _attachRequestEvent);
 
                     if (!string.IsNullOrEmpty(result))
                     {
@@ -334,7 +316,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 _attachRequestEvent.Reset();
                 InvokeScript(_currentPowerShell, "Exit-PSHostProcess");
 
-                if (!_validator.VerifyDetachFromRunspace(preScenario, _attachRequestEvent))
+                if (!_attachUtilities.VerifyDetachFromRunspace(preScenario, _attachRequestEvent))
                 {
                     return false;
                 }
@@ -369,6 +351,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             {
                 using (_currentPowerShell = PowerShell.Create())
                 {
+                    Tuple<string, int> parts = _attachUtilities.GetNameAndPort(remoteName);
+                    remoteName = parts.Item1;
+                    int port = parts.Item2;
+
+                    if (_attachUtilities.RemoteIsLoopback(remoteName))
+                    {
+                        // user gave a loopback address which we do not allow
+                        ServiceCommon.Log("User entered a loopback address as their qualifier.");
+                        errorMessage = Resources.LocalHostRemoteDebugError;
+                        return null;
+                    }
+
                     // Grab user credentials and initiate remote session with the remote machine
                     PSObject psobj = InvokeScript(_currentPowerShell, DebugEngineConstants.GetCredentialsCommand).FirstOrDefault();
                     if (psobj != null)
@@ -381,7 +375,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                         errorMessage = string.Empty;
                         return null;
                     }
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, port, _useSSL);
 
                     if (GetDebugScenario() == DebugScenario.Local)
                     {
@@ -436,9 +430,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 using (_currentPowerShell = PowerShell.Create())
                 {
                     // enter into a remote session
-                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, _useSSL);
+                    Tuple<string, int> parts = _attachUtilities.GetNameAndPort(remoteName);
+                    remoteName = parts.Item1;
+                    int port = parts.Item2;
 
-                    if (!_validator.VerifyAttachToRemoteRunspace())
+                    EnterCredentialedRemoteSession(_currentPowerShell, remoteName, port, _useSSL);
+
+                    if (!_attachUtilities.VerifyAttachToRemoteRunspace())
                     {
                         // bad credentials, couldn't connect to machine, user hit cancel on the auth dialog
                         ServiceCommon.Log("Unable to connect to remote machine.");
@@ -476,7 +474,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 InvokeScript(_currentPowerShell, DebugEngineConstants.ExitRemoteSessionDefaultCommand);
                 _savedCredential = null;
 
-                if (!_validator.VerifyDetachFromRemoteRunspace())
+                if (!_attachUtilities.VerifyDetachFromRemoteRunspace())
                 {
                     // very unlikely for this to happen, but we should make sure to handle the case anyway
                     ServiceCommon.Log("Unable to disconnect from the remote machine.");
@@ -1303,6 +1301,33 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             else
             {
                 return file;
+            }
+        }
+
+        public void LoadProfiles()
+        {
+            ServiceCommon.Log("Loading PowerShell Profiles");
+            PSObject profiles = _runspace.SessionStateProxy.PSVariable.Get("profile").Value as PSObject;
+
+            string sourceProfilesCommand = string.Empty;
+
+            // if a file exists at each location of the profiles, add sourcing that profile to the command
+            foreach (string[] profile in DebugEngineConstants.PowerShellProfiles)
+            {
+                PSMemberInfo profileMember = profiles.Members[profile[0]];
+                var profilePath = (string)profileMember.Value;
+                var profileFile = new FileInfo(profilePath);
+
+                if (profileFile.Exists)
+                {
+                    ServiceCommon.Log(string.Format("Profile file for {0} found at {1}.", profile[0], profilePath));
+                    sourceProfilesCommand += string.Format(". '{0}';{1}", profilePath, Environment.NewLine);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sourceProfilesCommand))
+            {
+                Execute(sourceProfilesCommand);
             }
         }
 

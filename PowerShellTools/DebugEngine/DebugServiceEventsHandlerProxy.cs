@@ -11,6 +11,7 @@ using PowerShellTools.ServiceManagement;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Host;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Options;
 
 namespace PowerShellTools.DebugEngine
 {

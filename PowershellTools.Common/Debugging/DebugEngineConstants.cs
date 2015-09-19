@@ -41,7 +41,7 @@ namespace PowerShellTools.Common.Debugging
         /// <remarks>
         /// Pattern sample: Matching pattern like "wait     {x=6, y=8} script.ps1: line 3"
         /// </remarks>
-        public const string ValidCallStackLine = 
+        public const string ValidCallStackLine =
             @"(\S+)" + // function name which consists of no whitespace characters
             @"\s+" + // spaces between function name and variable list
             @"\{([,\s]?[^\s,]+=\S+)*\}" + // list of parameters which are comma seperated, (note the equals sign)
@@ -163,5 +163,27 @@ param (
         /// Cmdlet to get a user's credentials. Used for attaching remotely. The $null Credential parameter supresses unwanted output in the REPL window.
         /// </summary>
         public const string GetCredentialsCommand = "Get-Credential -Credential $null";
+
+        /// <summary>
+        /// File name that is shared by all PowerShell hosts for either of the all hosts profiles.
+        /// </summary>
+        public const string AllHostsProfileFileName = "Profile.ps1";
+
+        /// <summary>
+        /// File name for profiles specifically for PowerShell tools
+        /// </summary>
+        public const string PowerShellToolsProfileFileName = "PoshTools_profile.ps1";
+
+        /// <summary>
+        /// Array of tuples in the order that they should be loaded which contain profile names and files for each PowerShell profile type.
+        /// First item is the profile name, second is which profile file to use with said profile.
+        /// </summary>
+        public static readonly string[][] PowerShellProfiles =
+        {
+            new string[] { "AllUsersAllHosts", AllHostsProfileFileName },
+            new string[] { "AllUsersCurrentHost", PowerShellToolsProfileFileName },
+            new string[] { "CurrentUserAllHosts", AllHostsProfileFileName },
+            new string[] { "CurrentUserCurrentHost", PowerShellToolsProfileFileName }
+        };
     }
 }
