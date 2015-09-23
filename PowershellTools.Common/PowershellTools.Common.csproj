@@ -126,6 +126,7 @@
     <Compile Include="IntelliSense\EmptyScriptExtent.cs" />
     <Compile Include="IntelliSense\EmptyScriptPosition.cs" />
     <Compile Include="ObservableObject.cs" />
+    <Compile Include="ProcmonLogger.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\ChoiceItem.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\DebugScenarioEnum.cs" />
     <Compile Include="ServiceManagement\DebuggingContract\VsKeyInfo.cs" />

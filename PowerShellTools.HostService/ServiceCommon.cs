@@ -2,6 +2,7 @@
 using PowerShellTools.Common.Debugging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
@@ -11,6 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerShellTools.Common;
 
 namespace PowerShellTools.HostService
 {
@@ -48,7 +50,16 @@ namespace PowerShellTools.HostService
         /// <param name="msg"></param>
         private static void Log(string msg)
         {
-            Console.WriteLine(string.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, App.EndpointGuid, msg));
+            try
+            {
+                ProcMonLogger.Instance.Log(msg);
+            }
+            catch 
+            {
+                
+            }
+            
+            Console.WriteLine(String.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, App.EndpointGuid, msg));
         }
     }
 }
