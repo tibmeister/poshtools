@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Globalization;
-using log4net;
+using PowerShellTools.Common.Logging;
 
 namespace Microsoft.VisualStudio.Shell
 {

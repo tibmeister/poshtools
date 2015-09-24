@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using log4net;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
@@ -36,6 +35,7 @@ using Threading = System.Threading.Tasks;
 
 using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.DebugEngine.Remote;
 using PowerShellTools.Explorer;
 using PowerShellTools.Common.ServiceManagement.ExplorerContract;

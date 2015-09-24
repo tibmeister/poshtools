@@ -6,7 +6,6 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Runtime.InteropServices;
 using System.Threading;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -16,6 +15,7 @@ using PowerShellTools.DebugEngine.Definitions;
 using Task = System.Threading.Tasks.Task;
 using Thread = System.Threading.Thread;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

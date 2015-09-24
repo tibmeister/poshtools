@@ -5,9 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using log4net;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement

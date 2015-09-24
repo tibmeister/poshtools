@@ -1,18 +1,4 @@
-﻿using Microsoft.PowerShell;
-using PowerShellTools.Common.Debugging;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Management.Automation;
-using System.Management.Automation.Host;
-using System.Management.Automation.Runspaces;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using PowerShellTools.Common;
+﻿using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.HostService
 {
@@ -20,46 +6,31 @@ namespace PowerShellTools.HostService
     {
         public static object RunspaceLock = new object();
 
+        private static readonly ILog Logger = LogManager.GetLogger(typeof (ServiceCommon));
+
+        static ServiceCommon()
+        {
+            LogManager.Initialize();
+        }
+
         /// <summary>
-        /// TODO: Temporary logging before having logging infrastructure ready
+        /// Log a message.
         /// </summary>
         /// <param name="msg"></param>
         /// <param name="args"></param>
         public static void Log(string msg, params object[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Log(string.Format(msg, args));
-            Console.ResetColor();
+            Logger.InfoFormat(msg, args);
         }
 
         /// <summary>
-        /// TODO: Temporary logging before having logging infrastructure ready
+        /// Log a callback event.
         /// </summary>
         /// <param name="msg"></param>
         /// <param name="args"></param>
         public static void LogCallbackEvent(string msg, params object[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Log(string.Format(msg, args));
-            Console.ResetColor();
-        }
-
-        /// <summary>
-        /// TODO: Temporary logging before having logging infrastructure ready
-        /// </summary>
-        /// <param name="msg"></param>
-        private static void Log(string msg)
-        {
-            try
-            {
-                ProcMonLogger.Instance.Log(msg);
-            }
-            catch 
-            {
-                
-            }
-            
-            Console.WriteLine(String.Format(DebugEngineConstants.PowerShellHostProcessLogFormat, App.EndpointGuid, msg));
+            Logger.WarnFormat(msg, args);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

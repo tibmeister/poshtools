@@ -7,10 +7,10 @@ using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Options;
 

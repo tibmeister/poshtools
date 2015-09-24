@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

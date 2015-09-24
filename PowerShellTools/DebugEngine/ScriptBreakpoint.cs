@@ -1,9 +1,9 @@
 ﻿using System.Management.Automation.Runspaces;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Runtime.InteropServices;
 using System;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

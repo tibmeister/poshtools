@@ -1,9 +1,9 @@
-﻿using log4net;
-using Microsoft.VisualStudio;
+﻿using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using PowerShellTools.DebugEngine;
 using System;
 using System.Threading.Tasks;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Contracts;
 
 namespace PowerShellTools.Service
