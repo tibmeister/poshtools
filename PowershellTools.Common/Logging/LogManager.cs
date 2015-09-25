@@ -15,10 +15,12 @@ namespace PowerShellTools.Common.Logging
 
         public static ILog GetLogger(Type type)
         {
+            Initialize();
+
             return new Log(log4net.LogManager.GetLogger(type));
         }
 
-        public static void Initialize()
+        private static void Initialize()
         {
             if (_initialized) return;
 
@@ -45,6 +47,7 @@ namespace PowerShellTools.Common.Logging
 
         public static void SetLoggingLevel(string levelString)
         {
+            Initialize();
             if (!File.Exists(LogConfigPath)) return;
 
             var document = XDocument.Load(LogConfigPath);

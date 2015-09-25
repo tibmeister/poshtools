@@ -8,11 +8,6 @@ namespace PowerShellTools.HostService
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof (ServiceCommon));
 
-        static ServiceCommon()
-        {
-            LogManager.Initialize();
-        }
-
         /// <summary>
         /// Log a message.
         /// </summary>

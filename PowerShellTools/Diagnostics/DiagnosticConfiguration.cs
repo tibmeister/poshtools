@@ -12,17 +12,9 @@ namespace PowerShellTools.Diagnostics
             LogManager.SetLoggingLevel("OFF");
         }
 
-        private static void EnsureDiagnosticsInitialized()
-        {
-            LogManager.Initialize();
-        }
-
         public static void EnableDiagnostics()
         {
-            EnsureDiagnosticsInitialized();
-
             LogManager.SetLoggingLevel("ALL");
-
             Log.Info("Diagnostics enabled.");
         }
 
