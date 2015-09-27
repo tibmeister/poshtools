@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -145,7 +146,11 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
+            EnvDTE.DTE dte = (EnvDTE.DTE)GetGlobalService(typeof(EnvDTE.DTE));
+            Log.InfoFormat("PowerShell Tools Version: {0}", Assembly.GetExecutingAssembly().GetName().Version);
+            Log.InfoFormat("Visual Studio Version: {0}", dte.Version);
+            Log.InfoFormat("Windows Version: {0}", Environment.OSVersion);
+            Log.InfoFormat("Current Culture: {0}", CultureInfo.CurrentCulture);
 
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
@@ -278,6 +283,7 @@ namespace PowerShellTools
             {
                 if (!DependencyValidator.Validate())
                 {
+                    Log.Warn("Dependency check failed.");
                     return;
                 }
 
@@ -292,6 +298,7 @@ namespace PowerShellTools
             }
             catch (Exception ex)
             {
+                Log.Error("Failed to initialize package.", ex);
                 MessageBox.Show(
                     Resources.PowerShellToolsInitializeFailed + ex,
                     Resources.MessageBoxErrorTitle,
@@ -305,7 +312,6 @@ namespace PowerShellTools
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
 
             var diagnosticsPage = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
-            var optionsPage = (GeneralDialogPage)GetDialogPage(typeof(GeneralDialogPage));
 
             if (diagnosticsPage.EnableDiagnosticLogging)
             {
@@ -347,6 +353,7 @@ namespace PowerShellTools
             }
             catch (AggregateException ae)
             {
+                Log.Error("Failed to initalize PowerShell host.", ae.Flatten());
                 MessageBox.Show(
                     Resources.PowerShellHostInitializeFailed,
                     Resources.MessageBoxErrorTitle,
