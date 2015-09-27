@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 

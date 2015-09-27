@@ -2,11 +2,11 @@
 
 using System;
 using System.Diagnostics;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.Logging;
 
 #endregion
 

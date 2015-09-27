@@ -4,7 +4,6 @@ using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Threading;
-using log4net;
 using System.Collections.ObjectModel;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using Microsoft.VisualStudio.Shell;
@@ -15,6 +14,7 @@ using PowerShellTools.Common.Debugging;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Windows.Forms;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.ServiceModel;
-using log4net;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Common.ServiceManagement.ExplorerContract;
 using PowerShellTools.Common.ServiceManagement.IntelliSenseContract;

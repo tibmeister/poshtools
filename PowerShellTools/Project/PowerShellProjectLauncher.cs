@@ -1,5 +1,4 @@
 ﻿using EnvDTE80;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -10,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Project
 {
