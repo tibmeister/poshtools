@@ -56,6 +56,11 @@ namespace PowerShellTools.Common.Logging
             _log.Warn(message, exception);
         }
 
+        public void Warn(string message)
+        {
+            _log.Warn(message);
+        }
+
         public void WarnFormat(string format, params object[] param)
         {
             _log.WarnFormat(format, param);
