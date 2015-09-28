@@ -30,7 +30,7 @@ namespace PowerShellTools.HostService
         private static ServiceHost _powerShellServiceHost;
         private static ServiceHost _powerShellDebuggingServiceHost;
         private static ServiceHost _powerShellExplorerServiceHost;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (App));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(App));
 
         public static int VsProcessId { get; private set; }
 
