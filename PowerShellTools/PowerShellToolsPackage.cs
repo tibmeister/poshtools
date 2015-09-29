@@ -146,12 +146,6 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            EnvDTE.DTE dte = (EnvDTE.DTE)GetGlobalService(typeof(EnvDTE.DTE));
-            Log.InfoFormat("PowerShell Tools Version: {0}", Assembly.GetExecutingAssembly().GetName().Version);
-            Log.InfoFormat("Visual Studio Version: {0}", dte.Version);
-            Log.InfoFormat("Windows Version: {0}", Environment.OSVersion);
-            Log.InfoFormat("Current Culture: {0}", CultureInfo.CurrentCulture);
-
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
@@ -281,6 +275,11 @@ namespace PowerShellTools
         {
             try
             {
+                EnvDTE.DTE dte = (EnvDTE.DTE)GetGlobalService(typeof(EnvDTE.DTE));
+                Log.InfoFormat("PowerShell Tools Version: {0}", Assembly.GetExecutingAssembly().GetName().Version);
+                Log.InfoFormat("Visual Studio Version: {0}", dte.Version);
+                Log.InfoFormat("Windows Version: {0}", Environment.OSVersion);
+                Log.InfoFormat("Current Culture: {0}", CultureInfo.CurrentCulture);
                 if (!DependencyValidator.Validate())
                 {
                     Log.Warn("Dependency check failed.");

@@ -49,7 +49,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private PowerShellDebuggingServiceAttachUtilities _attachUtilities;
         private bool _useSSL;
         private int _currentPid;
-        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellDebuggingService));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellDebuggingService));
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -892,7 +892,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         {
             ReleaseWaitHandler();
             
-            Log.Debug("Stop");
+            Log.Debug("Stop()");
             try
             {
                 if (_currentPowerShell != null)
@@ -904,7 +904,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
             }
             catch (Exception ex)
             {
-                Log.Debug("Exception when calling stop.", ex);
+                Log.Debug("Exception when stopping current PowerShell execution.", ex);
             }
         }
 

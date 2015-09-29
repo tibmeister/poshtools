@@ -17,7 +17,7 @@ namespace PowerShellTools.HostService
     [SuppressUnmanagedCodeSecurity]
     internal static class ConsoleManager
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ConsoleManager));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ConsoleManager));
         private const string Kernel32_DllName = "kernel32.dll";
 
         [DllImport(Kernel32_DllName)]
