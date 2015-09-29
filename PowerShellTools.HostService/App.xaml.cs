@@ -16,6 +16,7 @@ using System.ServiceModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.ExplorerContract;
 using PowerShellTools.HostService.ServiceManagement;
 
@@ -29,6 +30,7 @@ namespace PowerShellTools.HostService
         private static ServiceHost _powerShellServiceHost;
         private static ServiceHost _powerShellDebuggingServiceHost;
         private static ServiceHost _powerShellExplorerServiceHost;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(App));
 
         public static int VsProcessId { get; private set; }
 
@@ -36,6 +38,7 @@ namespace PowerShellTools.HostService
 
         void App_Startup(object sender, StartupEventArgs e)
         {
+            Log.DebugFormat("Host process started. Arguments: {0}", string.Join(" ", e.Args));
             // Application is running
             // Process command line e.Args
             if (e.Args.Length != 3 ||
@@ -43,12 +46,14 @@ namespace PowerShellTools.HostService
                 && e.Args[1].StartsWith(Constants.VsProcessIdArg, StringComparison.OrdinalIgnoreCase)
                 && e.Args[2].StartsWith(Constants.ReadyEventUniqueNameArg, StringComparison.OrdinalIgnoreCase)))
             {
+                Log.Error("Invalid args");
                 return;
             }
 
             EndpointGuid = e.Args[0].Remove(0, Constants.UniqueEndpointArg.Length);
             if (EndpointGuid.Length != Guid.Empty.ToString().Length)
             {
+                Log.Error("Invalid EndpointGUID");
                 return;
             }
 
@@ -58,6 +63,7 @@ namespace PowerShellTools.HostService
                             CultureInfo.InvariantCulture,
                             out vsProcessId))
             {
+                Log.Error("Invalid vsProcessId");
                 return;
             }
 
@@ -67,6 +73,7 @@ namespace PowerShellTools.HostService
             // the readyEventName should be VsPowershellToolProcess:TheGeneratedGuid
             if (readyEventName.Length != (Constants.ReadyEventPrefix.Length + Guid.Empty.ToString().Length))
             {
+                Log.Error("Invalid readyEventName");
                 return;
             }
 
@@ -117,44 +124,72 @@ namespace PowerShellTools.HostService
                                 _powerShellExplorerServiceHost = null;
                             }
 
+                            Log.Info("Visual Studio exited. Exiting...");
                             Environment.Exit(0);
                         });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Error("Failed to get parent process.", ex);
+            }
         }
 
         private static void CreatePowerShellIntelliSenseServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powerShellServiceHost = new ServiceHost(typeof(PowerShellIntelliSenseService), baseAddress);
+            try
+            {
+                _powerShellServiceHost = new ServiceHost(typeof(PowerShellIntelliSenseService), baseAddress);
 
-            _powerShellServiceHost.AddServiceEndpoint(typeof(IPowerShellIntelliSenseService),
-                                                      binding,
-                                                      Constants.IntelliSenseHostRelativeUri);
+                _powerShellServiceHost.AddServiceEndpoint(typeof(IPowerShellIntelliSenseService),
+                                                          binding,
+                                                          Constants.IntelliSenseHostRelativeUri);
 
-            _powerShellServiceHost.Open();
+                _powerShellServiceHost.Open();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Failed to open IntelliSense service host.", exception);
+                throw;
+            }
         }
 
         private static void CreatePowerShellDebuggingServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powerShellDebuggingServiceHost = new ServiceHost(typeof(PowerShellDebuggingService), baseAddress);
+            try
+            {
+                _powerShellDebuggingServiceHost = new ServiceHost(typeof(PowerShellDebuggingService), baseAddress);
 
-            _powerShellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowerShellDebuggingService),
-                binding,
-                Constants.DebuggingHostRelativeUri);
+                _powerShellDebuggingServiceHost.AddServiceEndpoint(typeof(IPowerShellDebuggingService),
+                    binding,
+                    Constants.DebuggingHostRelativeUri);
 
-            _powerShellDebuggingServiceHost.Open();
+                _powerShellDebuggingServiceHost.Open();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Failed to open Debugging service host.", exception);
+                throw;
+            }
         }
 
         private static void CreatePowerShellExplorerServiceHost(Uri baseAddress, NetNamedPipeBinding binding)
         {
-            _powerShellExplorerServiceHost = new ServiceHost(typeof(PowerShellExplorerService), baseAddress);
+            try
+            {
+                _powerShellExplorerServiceHost = new ServiceHost(typeof(PowerShellExplorerService), baseAddress);
 
-            _powerShellExplorerServiceHost.AddServiceEndpoint(typeof(IPowerShellExplorerService),
-                binding,
-                Constants.ExplorerHostRelativeUri);
+                _powerShellExplorerServiceHost.AddServiceEndpoint(typeof(IPowerShellExplorerService),
+                    binding,
+                    Constants.ExplorerHostRelativeUri);
 
-            _powerShellExplorerServiceHost.Open();
+                _powerShellExplorerServiceHost.Open();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Failed to open Explorer service host.", exception);
+                throw;
+            }
         }
     }
 }

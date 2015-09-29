@@ -13,6 +13,7 @@ namespace PowerShellTools.Common.Logging
         void DebugFormat(string format, params object[] param);
         void Debug(string message, Exception exception);
         void Warn(string message, Exception exception);
+        void Warn(string message);
         void WarnFormat(string format, params object[] param);
     }
 }

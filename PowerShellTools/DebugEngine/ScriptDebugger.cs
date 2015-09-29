@@ -269,6 +269,7 @@ namespace PowerShellTools.DebugEngine
                 IsDebuggingCommandReady = false;
 
                 _stoppingCompleteEvent.WaitOne();
+                Log.Info("Stop complete.");
             }
             catch (Exception ex)
             {

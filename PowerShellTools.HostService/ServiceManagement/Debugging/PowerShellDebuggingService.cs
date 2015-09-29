@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 
 namespace PowerShellTools.HostService.ServiceManagement.Debugging
@@ -48,6 +49,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         private PowerShellDebuggingServiceAttachUtilities _attachUtilities;
         private bool _useSSL;
         private int _currentPid;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellDebuggingService));
 
         // Needs to be initilaized from its corresponding VS option page over the wcf channel.
         // For now we dont have anything needed from option page, so we just initialize here.
@@ -889,15 +891,21 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
         public void Stop()
         {
             ReleaseWaitHandler();
-
+            
+            Log.Debug("Stop()");
             try
             {
                 if (_currentPowerShell != null)
                 {
+                    Log.Debug("Stopping current PowerShell");
                     _currentPowerShell.Stop();
+                    Log.Debug("Stop complete.");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Log.Debug("Exception when stopping current PowerShell execution.", ex);
+            }
         }
 
         /// <summary>
