@@ -5,14 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Explorer
 {
     internal class PSParameterEditorViewModel : ViewModel, IHostWindowContent
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PSParameterEditorViewModel));
+
         private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
-        private readonly IExceptionHandler _exceptionHandler;
 
         private IPowerShellCommand _command;
         private CommandModel _commandModel;
@@ -22,11 +24,10 @@ namespace PowerShellTools.Explorer
         private string _selectedItem = string.Empty;
         private bool _isBusy;
 
-        public PSParameterEditorViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
+        public PSParameterEditorViewModel(IHostWindow hostWindow, IDataProvider dataProvider)
         {
             _hostWindow = hostWindow;
             _dataProvider = dataProvider;
-            _exceptionHandler = exceptionHandler;
 
             _options.Options.ForEach(x => x.PropertyChanged += OnOptionChanged);
 
@@ -156,37 +157,43 @@ namespace PowerShellTools.Explorer
 
         private void GetCommandMetadataCallback(IPowerShellCommandMetadata result)
         {
-            Model = CommandModelFactory.GenerateCommandModel(result);
-
-            if (Model != null)
+            try
             {
-                _hostWindow.SetCaption(Model.Name);
-                UpdateCommandPreview();
-                Model.PropertyChanged += OnCommandModelPropertyChanged;
+                Model = CommandModelFactory.GenerateCommandModel(result);
+
+                if (Model != null)
+                {
+                    _hostWindow.SetCaption(Model.Name);
+                    UpdateCommandPreview();
+                    Model.PropertyChanged += OnCommandModelPropertyChanged;
+                }
             }
-
-            IsBusy = false;
-        }
-
-        private void OnCommandModelPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            UpdateCommandPreview();
-        }
-
-        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            UpdateCommandPreview();
+            catch (Exception ex)
+            {
+                Log.Error("Error while creating command model", ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         private void UpdateCommandPreview()
         {
-            CommandFormatterOptions options = new CommandFormatterOptions()
+            try
             {
-                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
-                ParameterSet = _selectedItem
-            };
+                CommandFormatterOptions options = new CommandFormatterOptions()
+                {
+                    FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
+                    ParameterSet = _selectedItem
+                };
 
-            CommandPreview = CommandFormatter.FormatCommandModel(Model, options);
+                CommandPreview = CommandFormatter.FormatCommandModel(Model, options);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Exception while updating the command preview", ex);
+            }
         }
 
         private void ViewDetails()
@@ -197,21 +204,22 @@ namespace PowerShellTools.Explorer
 
         private void Copy()
         {
-            // TODO: Get the value to copy directly from the command preview box
-            CommandFormatterOptions options = new CommandFormatterOptions()
-            {
-                FormateStyle = _options.FormatAsHashTable ? CommandFormatStyle.HashTable : CommandFormatStyle.Inline,
-                ParameterSet = _selectedItem
-            };
-
-            var command = CommandFormatter.FormatCommandModel(Model, options);
-
-            ClipboardHelper.SetText(command);
+            ClipboardHelper.SetText(CommandPreview);
         }
 
         private void Cancel()
         {
             _hostWindow.ShowCommandExplorer();
+        }
+
+        private void OnCommandModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            UpdateCommandPreview();
+        }
+
+        private void OnOptionChanged(object sender, PropertyChangedEventArgs e)
+        {
+            UpdateCommandPreview();
         }
 
         internal void Activated()

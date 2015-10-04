@@ -5,14 +5,16 @@ using System.Linq;
 using System.Management.Automation;
 using System.Windows.Forms;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Explorer
 {
     internal sealed class PSCommandExplorerViewModel : ViewModel, IHostWindowContent, ISearchTaskTarget
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PSCommandExplorerViewModel));
+
         private readonly IHostWindow _hostWindow;
         private readonly IDataProvider _dataProvider;
-        private readonly IExceptionHandler _exceptionHandler;
 
         private IPowerShellCommand _selectedCommand = null;
         private bool _isFiltered = false;
@@ -21,11 +23,10 @@ namespace PowerShellTools.Explorer
         private ObservableList<IPowerShellCommand> _commands = new ObservableList<IPowerShellCommand>();
         private ObservableList<IPowerShellCommand> _filteredCommands = new ObservableList<IPowerShellCommand>();
 
-        public PSCommandExplorerViewModel(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
+        public PSCommandExplorerViewModel(IHostWindow hostWindow, IDataProvider dataProvider)
         {
             _hostWindow = hostWindow;
             _dataProvider = dataProvider;
-            _exceptionHandler = exceptionHandler;
 
             CopyCommand = new ViewModelCommand<object>(this, Copy, CanCopy);
             ViewDetailsCommand = new ViewModelCommand<object>(this, ViewDetails, CanViewDetails);

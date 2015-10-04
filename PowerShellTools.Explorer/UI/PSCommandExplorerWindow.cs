@@ -25,7 +25,6 @@ namespace PowerShellTools.Explorer
     [Guid("dd9b7693-1385-46a9-a054-06566904f861")]
     public class PSCommandExplorerWindow : ToolWindowPane, IHostWindow
     {
-        private readonly IExceptionHandler _exceptionHandler;
         private readonly IDataProvider _dataProvider;
         private readonly PSCommandExplorer _commandExplorer;
 
@@ -35,9 +34,8 @@ namespace PowerShellTools.Explorer
         public PSCommandExplorerWindow() :
             base(null)
         {
-            _exceptionHandler = new ExceptionHandler();
-            _dataProvider = new DataProvider(_exceptionHandler);
-            _commandExplorer = new PSCommandExplorer(this, _dataProvider, _exceptionHandler);
+            _dataProvider = new DataProvider();
+            _commandExplorer = new PSCommandExplorer(this, _dataProvider);
 
             // Set the window title reading it from the resources.
             this.Caption = Resources.ToolWindowTitle;
@@ -76,7 +74,7 @@ namespace PowerShellTools.Explorer
 
         public void ShowParameterEditor(IPowerShellCommand command)
         {
-            var view = new PSParameterEditor(this, _dataProvider, _exceptionHandler);
+            var view = new PSParameterEditor(this, _dataProvider);
             ContentHost.Content = view;
             ((PSParameterEditorViewModel)view.DataContext).LoadCommand(command);
         }
