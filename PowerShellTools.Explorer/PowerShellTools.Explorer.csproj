@@ -188,13 +188,11 @@
     <Compile Include="Helpers\ClipboardHelper.cs" />
     <Compile Include="Helpers\DragDropHelper.cs" />
     <Compile Include="Helpers\DTEHelper.cs" />
-    <Compile Include="Helpers\ExceptionHandler.cs" />
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\MouseDoubleClickBehaviour.cs" />
     <Compile Include="Helpers\NotifiyTaskCompletion.cs" />
     <Compile Include="Helpers\WpfHelper.cs" />
     <Compile Include="Interfaces\IDialog.cs" />
-    <Compile Include="Interfaces\IExceptionHandler.cs" />
     <Compile Include="Interfaces\IHostWindow.cs" />
     <Compile Include="DataProvider\DataProvider.cs" />
     <Compile Include="Interfaces\IDataProvider.cs" />

@@ -7,11 +7,11 @@ namespace PowerShellTools.Explorer
     /// </summary>
     public partial class PSParameterEditor : UserControl
     {
-        public PSParameterEditor(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
+        public PSParameterEditor(IHostWindow hostWindow, IDataProvider dataProvider)
         {
             InitializeComponent();
 
-            this.DataContext = new PSParameterEditorViewModel(hostWindow, dataProvider, exceptionHandler);
+            this.DataContext = new PSParameterEditorViewModel(hostWindow, dataProvider);
         }
     }
 }
