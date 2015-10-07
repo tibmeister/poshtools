@@ -5,6 +5,7 @@ using System.Management.Automation.Language;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.TestAdapter.Properties;
 
 namespace PowerShellTools.TestAdapter
@@ -13,6 +14,8 @@ namespace PowerShellTools.TestAdapter
     [FileExtension(".ps1")]
     public class PowerShellTestDiscoverer : ITestDiscoverer
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellTestDiscoverer));
+
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext,
             IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
@@ -41,6 +44,7 @@ namespace PowerShellTools.TestAdapter
             {
                 foreach (var error in errors)
                 {
+                    Log.WarnFormat("Failed to parse {0}. Error: {1}", source, error.Message);
                     SendMessage(TestMessageLevel.Error, string.Format(Resources.ParserErrorFormat, error.Message), logger);
                 }
                 return;
@@ -65,7 +69,9 @@ namespace PowerShellTools.TestAdapter
                     LineNumber = ast1.Extent.StartLineNumber
                 };
 
-                foreach(var tag in tags)
+                Log.DebugFormat("Found describe {0} in source {1} at {2} with tags {3}", describeName, source, ast.Extent.StartLineNumber, string.Join(",", tags.ToArray()));
+
+                foreach (var tag in tags)
                 {
                     testcase.Traits.Add(tag, string.Empty);
                 }

@@ -19,5 +19,10 @@ namespace PowerShellTools.TestAdapter
         public TestOutcome Outcome { get; private set; }
         public string ErrorMessage { get; private set; }
         public string ErrorStacktrace { get; private set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0}\n{1}\n{2}", Outcome, ErrorMessage, ErrorStacktrace);
+        }
     }
 }

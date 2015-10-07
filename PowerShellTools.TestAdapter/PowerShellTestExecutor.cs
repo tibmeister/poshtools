@@ -9,6 +9,7 @@ using Microsoft.PowerShell;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.TestAdapter.Properties;
 
 namespace PowerShellTools.TestAdapter
@@ -16,6 +17,7 @@ namespace PowerShellTools.TestAdapter
     [ExtensionUri(ExecutorUriString)]
     public class PowerShellTestExecutor : ITestExecutor
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellTestExecutor));
         public void RunTests(IEnumerable<string> sources, IRunContext runContext,
             IFrameworkHandle frameworkHandle)
         {
@@ -31,6 +33,7 @@ namespace PowerShellTools.TestAdapter
 
         private static void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
+            Log.DebugFormat("SetExecutionPolicy({0},{1})", policy, scope);
             ExecutionPolicy currentPolicy = ExecutionPolicy.Undefined;
 
             using (var ps = PowerShell.Create())
@@ -42,6 +45,8 @@ namespace PowerShellTools.TestAdapter
                     currentPolicy = ((ExecutionPolicy)result.BaseObject);
                     break;
                 }
+
+                Log.DebugFormat("Current Policy: {0}", currentPolicy);
 
                 if ((policy <= currentPolicy || currentPolicy == ExecutionPolicy.Bypass) && currentPolicy != ExecutionPolicy.Undefined) //Bypass is the absolute least restrictive, but as added in PS 2.0, and thus has a value of '4' instead of a value that corresponds to it's relative restrictiveness
                     return;
@@ -59,7 +64,11 @@ namespace PowerShellTools.TestAdapter
             SetupExecutionPolicy();
             foreach (var test in tests)
             {
-                if (_mCancelled) break;
+                if (_mCancelled)
+                {
+                    Log.Debug("Test run canceled.");
+                    break;
+                }
 
                 var testResult = new TestResult(test);
                 testResult.Outcome = TestOutcome.Failed;
@@ -84,6 +93,7 @@ namespace PowerShellTools.TestAdapter
                 }
                 catch (Exception ex)
                 {
+                    Log.Warn("Test run threw an exception.", ex);
                     testResult.Outcome = TestOutcome.Failed;
                     testResult.ErrorMessage = ex.Message;
                     testResult.ErrorStackTrace = ex.StackTrace;
@@ -91,6 +101,7 @@ namespace PowerShellTools.TestAdapter
 
                 if (testResultData != null)
                 {
+                    Log.DebugFormat("Test Result: {0}", testResultData);
                     testResult.Outcome = testResultData.Outcome;
                     testResult.ErrorMessage = testResultData.ErrorMessage;
                     testResult.ErrorStackTrace = testResultData.ErrorStacktrace;
@@ -125,14 +136,15 @@ namespace PowerShellTools.TestAdapter
             {
                 var errorRecord = powerShell.Streams.Error.FirstOrDefault();
                 var errorMessage = errorRecord == null ? string.Empty : errorRecord.ToString();
+                Log.WarnFormat("Failed to import Pester module. {0}", errorMessage);
                 return new PowerShellTestResult(TestOutcome.Failed, Resources.FailedToLoadPesterModule + errorMessage, string.Empty);
             }
 
             var fi = new FileInfo(testCase.CodeFilePath);
 
-            var tempFile = Path.GetTempFileName();
-
             var describeName = testCase.FullyQualifiedName;
+
+            Log.DebugFormat("Running test: {0} @ {1}", describeName, fi.FullName);
 
             powerShell.AddCommand("Invoke-Pester")
                 .AddParameter("Path", fi.Directory.FullName)
@@ -154,7 +166,7 @@ namespace PowerShellTools.TestAdapter
                 if (describeName.Equals(describe, StringComparison.OrdinalIgnoreCase))
                 {
                     var currentOutcome = GetOutcome(result.Properties["Result"].Value as string);
-                    if(currentOutcome == TestOutcome.Failed)
+                    if (currentOutcome == TestOutcome.Failed)
                     {
                         testOutcome = TestOutcome.Failed;
                     }
@@ -171,6 +183,10 @@ namespace PowerShellTools.TestAdapter
                     var name = result.Properties["Name"].Value as string;
                     var stackTraceString = result.Properties["StackTrace"].Value as string;
                     var errorString = result.Properties["FailureMessage"].Value as string;
+
+                    Log.DebugFormat("Found test result for {0}", describeName);
+                    Log.DebugFormat("Test outcome: {0}", testOutcome);
+
 
                     if (!string.IsNullOrEmpty(stackTraceString))
                     {

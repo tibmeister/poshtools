@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestWindow.Extensibility;
+using PowerShellTools.Common.Logging;
 using XmlTestAdapter;
 using XmlTestAdapter.EventWatchers;
 using XmlTestAdapter.EventWatchers.EventArgs;
@@ -17,17 +18,17 @@ namespace PowerShellTools.TestAdapter
     {
         private readonly List<ITestContainer> _cachedContainers;
 
-        private readonly ILogger _logger;
         private readonly IServiceProvider _serviceProvider;
         private bool _initialContainerSearch;
         private ISolutionEventsListener _solutionListener;
         private ITestFileAddRemoveListener _testFilesAddRemoveListener;
         private ITestFilesUpdateWatcher _testFilesUpdateWatcher;
 
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellTestContainerDiscoverer));
+
         [ImportingConstructor]
         public PowerShellTestContainerDiscoverer(
             [Import(typeof (SVsServiceProvider))] IServiceProvider serviceProvider,
-            ILogger logger,
             ISolutionEventsListener solutionListener,
             ITestFilesUpdateWatcher testFilesUpdateWatcher,
             ITestFileAddRemoveListener testFilesAddRemoveListener)
@@ -35,12 +36,9 @@ namespace PowerShellTools.TestAdapter
             _initialContainerSearch = true;
             _cachedContainers = new List<ITestContainer>();
             _serviceProvider = serviceProvider;
-            _logger = logger;
             _solutionListener = solutionListener;
             _testFilesUpdateWatcher = testFilesUpdateWatcher;
             _testFilesAddRemoveListener = testFilesAddRemoveListener;
-
-            logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer Constructor Entering");
 
             _testFilesAddRemoveListener.TestFileChanged += OnProjectItemChanged;
             _testFilesAddRemoveListener.StartListeningForTestFileChanges();
@@ -71,11 +69,10 @@ namespace PowerShellTools.TestAdapter
 
         private void OnTestContainersChanged()
         {
-            _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnTestContainersChanged");
+            Log.Debug("PowerShellTestContainerDiscoverer:OnTestContainersChanged");
             if (TestContainersUpdated != null && !_initialContainerSearch)
             {
-                _logger.Log(MessageLevel.Diagnostic,
-                    "PowerShellTestContainerDiscoverer:Triggering on TestContainersUpdated");
+                Log.Debug("PowerShellTestContainerDiscoverer:Triggering on TestContainersUpdated");
                 TestContainersUpdated(this, EventArgs.Empty);
             }
         }
@@ -87,20 +84,18 @@ namespace PowerShellTools.TestAdapter
 
         private void OnSolutionProjectChanged(object sender, SolutionEventsListenerEventArgs e)
         {
-            _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnSolutionProjectChanged");
+            Log.Debug("PowerShellTestContainerDiscoverer:OnSolutionProjectChanged");
             if (e != null)
             {
                 IEnumerable<string> files = FindPowerShellTestFiles(e.Project);
                 if (e.ChangedReason == SolutionChangedReason.Load)
                 {
-                    _logger.Log(MessageLevel.Diagnostic,
-                        "PowerShellTestContainerDiscoverer:OnTestContainersChanged - Change reason is load");
+                    Log.Debug("PowerShellTestContainerDiscoverer:OnTestContainersChanged - Change reason is load");
                     UpdateFileWatcher(files, true);
                 }
                 else if (e.ChangedReason == SolutionChangedReason.Unload)
                 {
-                    _logger.Log(MessageLevel.Diagnostic,
-                        "PowerShellTestContainerDiscoverer:OnTestContainersChanged - Change reason is unload");
+                    Log.Debug("PowerShellTestContainerDiscoverer:OnTestContainersChanged - Change reason is unload");
                     UpdateFileWatcher(files, false);
                 }
             }
@@ -116,15 +111,13 @@ namespace PowerShellTools.TestAdapter
             {
                 if (isAdd)
                 {
-                    _logger.Log(MessageLevel.Diagnostic,
-                        "PowerShellTestContainerDiscoverer:UpdateFileWatcher - AddWatch:" + file);
+                    Log.Debug("PowerShellTestContainerDiscoverer:UpdateFileWatcher - AddWatch:" + file);
                     _testFilesUpdateWatcher.AddWatch(file);
                     AddTestContainerIfTestFile(file);
                 }
                 else
                 {
-                    _logger.Log(MessageLevel.Diagnostic,
-                        "PowerShellTestContainerDiscoverer:UpdateFileWatcher - RemoveWatch:" + file);
+                    Log.Debug("PowerShellTestContainerDiscoverer:UpdateFileWatcher - RemoveWatch:" + file);
                     _testFilesUpdateWatcher.RemoveWatch(file);
                     RemoveTestContainer(file);
                 }
@@ -134,33 +127,30 @@ namespace PowerShellTools.TestAdapter
 
         private void OnProjectItemChanged(object sender, TestFileChangedEventArgs e)
         {
-            _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnProjectItemChanged");
+            Log.Debug("PowerShellTestContainerDiscoverer:OnProjectItemChanged");
             if (e != null)
             {
                 // Don't do anything for files we are sure can't be test files
                 if (!IsPowerShellTestFile(e.File)) return;
 
-                _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:OnProjectItemChanged - IsPs1File");
+                Log.Debug("PowerShellTestContainerDiscoverer:OnProjectItemChanged - IsPs1File");
 
                 switch (e.ChangedReason)
                 {
                     case TestFileChangedReason.Added:
-                        _logger.Log(MessageLevel.Diagnostic,
-                            "PowerShellTestContainerDiscoverer:OnProjectItemChanged - Added");
+                        Log.Debug("PowerShellTestContainerDiscoverer:OnProjectItemChanged - Added");
                         _testFilesUpdateWatcher.AddWatch(e.File);
                         AddTestContainerIfTestFile(e.File);
 
                         break;
                     case TestFileChangedReason.Removed:
-                        _logger.Log(MessageLevel.Diagnostic,
-                            "PowerShellTestContainerDiscoverer:OnProjectItemChanged - Removed");
+                        Log.Debug("PowerShellTestContainerDiscoverer:OnProjectItemChanged - Removed");
                         _testFilesUpdateWatcher.RemoveWatch(e.File);
                         RemoveTestContainer(e.File);
 
                         break;
                     case TestFileChangedReason.Changed:
-                        _logger.Log(MessageLevel.Diagnostic,
-                            "PowerShellTestContainerDiscoverer:OnProjectItemChanged - Changed");
+                        Log.Debug("PowerShellTestContainerDiscoverer:OnProjectItemChanged - Changed");
                         AddTestContainerIfTestFile(e.File);
                         break;
                 }
@@ -177,8 +167,7 @@ namespace PowerShellTools.TestAdapter
             // If this is a test file
             if (isTestFile)
             {
-                _logger.Log(MessageLevel.Diagnostic,
-                    "PowerShellTestContainerDiscoverer:AddTestContainerIfTestFile - Is a test file. Adding to cached containers.");
+                Log.Debug("PowerShellTestContainerDiscoverer:AddTestContainerIfTestFile - Is a test file. Adding to cached containers.");
                 var container = new PowerShellTestContainer(this, file, ExecutorUri);
                 _cachedContainers.Add(container);
             }
@@ -189,10 +178,7 @@ namespace PowerShellTools.TestAdapter
             int index = _cachedContainers.FindIndex(x => x.Source.Equals(file, StringComparison.OrdinalIgnoreCase));
             if (index >= 0)
             {
-                _logger.Log(MessageLevel.Diagnostic,
-                    String.Format(
-                        "PowerShellTestContainerDiscoverer:RemoveTestContainer - Removing [{0}] from cached containers.",
-                        file));
+                Log.DebugFormat("PowerShellTestContainerDiscoverer:RemoveTestContainer - Removing [{0}] from cached containers.",file);
                 _cachedContainers.RemoveAt(index);
             }
         }
@@ -221,8 +207,7 @@ namespace PowerShellTools.TestAdapter
 
         private IEnumerable<string> FindPowerShellTestFiles(IVsProject project)
         {
-            _logger.Log(MessageLevel.Diagnostic,
-                "PowerShellTestContainerDiscoverer:OnTestContainersChanged - FindPs1Files");
+            Log.Debug("PowerShellTestContainerDiscoverer:OnTestContainersChanged - FindPs1Files");
             return from item in VsSolutionHelper.GetProjectItems(project)
                 where IsPowerShellTestFile(item)
                 select item;
@@ -232,13 +217,12 @@ namespace PowerShellTools.TestAdapter
         {
             try
             {
-                _logger.Log(MessageLevel.Diagnostic, "PowerShellTestContainerDiscoverer:IsTestFile - " + path);
+                Log.Debug("PowerShellTestContainerDiscoverer:IsTestFile - " + path);
                 return path.EndsWith(".tests.ps1", StringComparison.OrdinalIgnoreCase);
             }
             catch (IOException e)
             {
-                _logger.Log(MessageLevel.Error,
-                    "IO error when detecting a test file during Test Container Discovery" + e.Message);
+                Log.Debug("IO error when detecting a test file during Test Container Discovery" + e.Message);
             }
 
             return false;
