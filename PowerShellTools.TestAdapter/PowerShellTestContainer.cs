@@ -91,7 +91,7 @@ namespace PowerShellTools.TestAdapter
 
         public override string ToString()
         {
-            return ExecutorUri + "/" + Source;
+            return ExecutorUri + "/" + Source;
         }
     }
 }
