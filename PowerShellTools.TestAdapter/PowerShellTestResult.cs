@@ -9,6 +9,12 @@ namespace PowerShellTools.TestAdapter
             Outcome = outcome;
         }
 
+        public PowerShellTestResult(TestOutcome outcome, string errorMessage)
+        {
+            Outcome = outcome;
+            ErrorMessage = errorMessage;
+        }
+
         public PowerShellTestResult(TestOutcome outcome, string errorMessage, string errorStacktrace)
         {
             Outcome = outcome;

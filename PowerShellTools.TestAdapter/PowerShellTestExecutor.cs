@@ -153,9 +153,20 @@ namespace PowerShellTools.TestAdapter
 
             var pesterResult = powerShell.Invoke().FirstOrDefault();
 
+            if (pesterResult == null || powerShell.HadErrors)
+            {
+                var sb = new StringBuilder();
+                foreach (var errorRecord in powerShell.Streams.Error)
+                {
+                    sb.AppendLine(errorRecord.ToString());
+                }
+
+                return new PowerShellTestResult(TestOutcome.Failed, sb.ToString());
+            }
+
             var results = pesterResult.Properties["TestResult"].Value as Array;
 
-            TestOutcome testOutcome = TestOutcome.NotFound;
+            var testOutcome = TestOutcome.NotFound;
 
             var error = new StringBuilder();
             var stackTrace = new StringBuilder();
