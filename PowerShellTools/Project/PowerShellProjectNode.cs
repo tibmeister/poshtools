@@ -1,16 +1,22 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudioTools.Project;
 using PowerShellTools.Classification;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Project.PropertyPages;
 
 namespace PowerShellTools.Project
 {
-    internal class PowerShellProjectNode : CommonProjectNode
+    internal class PowerShellProjectNode : CommonProjectNode, IVsReferenceManagerUser
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (PowerShellProjectNode));
+
         private readonly CommonProjectPackage _package;
         private static readonly ImageList ProjectImageList =
             Utilities.GetImageList(
@@ -147,6 +153,72 @@ namespace PowerShellTools.Project
             var fi = new FileInfo(fileName);
 
             return CodeFileExtensions.Any(x => x.Equals(fi.Extension, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public override int AddProjectReference()
+        {
+            var referenceManager = this.GetService(typeof(SVsReferenceManager)) as IVsReferenceManager;
+            if (referenceManager != null)
+            {
+                referenceManager.ShowReferenceManager(
+                    pRefMgrUser: this,
+                    lpszDlgTitle: SR.GetString(SR.AddReferenceDialogTitle, CultureInfo.CurrentUICulture),
+                    lpszHelpTopic: "VS.ReferenceManager",
+                    guidDefaultProviderContext: Common.Constants.ModuleReferenceProvider_guid,
+                    fForceShowDefaultProvider: false);
+
+                return VSConstants.S_OK;
+            }
+
+            return VSConstants.E_FAIL;
+        }
+
+        protected internal override void ProcessReferences()
+        {
+            base.ProcessReferences();
+
+            foreach (var reference in GetReferenceContainer().EnumReferences())
+            {
+                Log.DebugFormat("Reference: {0} - {1}", reference.Caption, reference.Url);
+            }
+        }
+
+        public void ChangeReferences(uint operation, IVsReferenceProviderContext changedContext)
+        {
+            foreach (var reference in changedContext.References)
+            {
+                Log.DebugFormat("Reference changed: {0} {1}", reference, reference.GetType());
+                changedContext.AddReference(reference as IVsReference);
+            }
+        }
+
+        public Array GetProviderContexts()
+        {
+            var targetFrameworkAttribute = Attribute
+             .GetCustomAttributes(this.GetType().Assembly, typeof(TargetFrameworkAttribute))
+             .OfType<TargetFrameworkAttribute>()
+             .FirstOrDefault();
+            if (targetFrameworkAttribute != null)
+            {
+                var referenceManager = this.GetService(typeof(SVsReferenceManager)) as IVsReferenceManager;
+                var assemblyContext = referenceManager.CreateProviderContext(VSConstants.AssemblyReferenceProvider_Guid) as IVsAssemblyReferenceProviderContext;
+                assemblyContext.TargetFrameworkMoniker = targetFrameworkAttribute.FrameworkName;
+                assemblyContext.Tabs = (uint)__VSASSEMBLYPROVIDERTAB.TAB_ASSEMBLY_FRAMEWORK;
+                assemblyContext.AssemblySearchPaths = this.GetProjectProperty("AssemblySearchPaths");
+
+                foreach (var node in GetReferenceContainer().EnumReferences().OfType<AssemblyReferenceNode>())
+                {
+                    var reference = assemblyContext.CreateReference() as IVsAssemblyReference;
+                    reference.Name = node.Caption;
+                    reference.FullPath = node.Url;
+                }
+
+                var moduleContext = referenceManager.CreateProviderContext(Common.Constants.ModuleReferenceProvider_guid) as IVsAssemblyReferenceProviderContext;
+                
+                return new[] { assemblyContext, moduleContext };
+            }
+
+            throw new InvalidOperationException("Reference Manager Failed");
         }
     }
 }

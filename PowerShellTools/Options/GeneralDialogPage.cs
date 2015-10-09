@@ -35,6 +35,10 @@ namespace PowerShellTools.Options
         [Description("When false, the host service will not load any profiles on startup.")]
         public bool ShouldLoadProfiles { get; set; }
 
+        [DisplayName(@"Restart PowerShell Host per Execution")]
+        [Description("When true, restarts the PowerShell Host per execution. This is useful when loading .NET assemblies that are built at part of the same solution. This setting can have a performance impact.")]
+        public bool ShouldRestartHostProcess { get; set; }
+
         protected override void OnApply(DialogPage.PageApplyEventArgs e)
         {
             base.OnApply(e);
@@ -76,6 +80,7 @@ namespace PowerShellTools.Options
             BitnessSettingChanged += PowerShellToolsPackage.Instance.BitnessSettingChanged;
 
             this.ShouldLoadProfiles = true;
+            this.ShouldRestartHostProcess = false;
         }
     }
 }

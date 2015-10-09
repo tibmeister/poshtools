@@ -107,6 +107,15 @@
     <Reference Include="Microsoft.VisualStudio.OLE.Interop" />
     <Reference Include="Microsoft.VisualStudio.Package.LanguageService.$(VSTarget), Version=$(VSTarget).0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.VisualStudio.Platform.VSEditor" />
+    <Reference Include="Microsoft.VisualStudio.ReferenceManager">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\ReferenceManager\Microsoft.VisualStudio.ReferenceManager.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ReferenceManager.Contracts">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\ReferenceManager\Microsoft.VisualStudio.ReferenceManager.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ReferenceManager.Providers">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\CommonExtensions\Microsoft\ReferenceManager\Microsoft.VisualStudio.ReferenceManager.Providers.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0">
@@ -373,6 +382,7 @@
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
+    <Compile Include="Project\ModuleReference.cs" />
     <Compile Include="Project\PowerShellCodeDomProvider.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />

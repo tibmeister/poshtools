@@ -15,6 +15,8 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Windows.Forms;
 using PowerShellTools.Common.Logging;
+using PowerShellTools.Options;
+using PowerShellTools.ServiceManagement;
 
 namespace PowerShellTools.DebugEngine
 {
@@ -444,6 +446,12 @@ namespace PowerShellTools.DebugEngine
                     HostUi.VsOutputString(string.Format("{0}{1}{2}", GetPrompt(), node.FileName, Environment.NewLine));
                 }
                 Execute(commandLine);
+
+                var page = PowerShellToolsPackage.Instance.GetDialogPage<GeneralDialogPage>();
+                if (page != null && page.ShouldRestartHostProcess)
+                {
+                    ConnectionManager.Instance.StopThisSucker();
+                }
             }
         }
 

@@ -1493,7 +1493,7 @@ namespace Microsoft.VisualStudioTools.Project
         /// <returns>S_OK if succeeded. Failure other wise</returns>
         public virtual int AddProjectReference()
         {
-            IVsComponentSelectorDlg2 componentDialog;
+            IVsComponentSelectorDlg4 componentDialog;
             Guid guidEmpty = Guid.Empty;
             VSCOMPONENTSELECTORTABINIT[] tabInit = new VSCOMPONENTSELECTORTABINIT[4];
             string strBrowseLocations = Path.GetDirectoryName(ProjectHome);
@@ -1522,7 +1522,7 @@ namespace Microsoft.VisualStudioTools.Project
 
             uint pX = 0, pY = 0;
 
-            componentDialog = GetService(typeof(SVsComponentSelectorDlg)) as IVsComponentSelectorDlg2;
+            componentDialog = GetService(typeof(SVsComponentSelectorDlg)) as IVsComponentSelectorDlg4;
             try
             {
                 // call the container to open the add reference dialog.
@@ -1532,7 +1532,7 @@ namespace Microsoft.VisualStudioTools.Project
                     ShowProjectInSolutionPage = false;
 
                     // call the container to open the add reference dialog.
-                    ErrorHandler.ThrowOnFailure(componentDialog.ComponentSelectorDlg2(
+                    ErrorHandler.ThrowOnFailure(componentDialog.ComponentSelectorDlg5(
                         (System.UInt32)(__VSCOMPSELFLAGS.VSCOMSEL_MultiSelectMode | __VSCOMPSELFLAGS.VSCOMSEL_IgnoreMachineName),
                         (IVsComponentUser)this,
                         0,
@@ -1545,7 +1545,7 @@ namespace Microsoft.VisualStudioTools.Project
                         tabInit,
                         ref guidEmpty,
                         AddReferenceExtensions,
-                        ref strBrowseLocations));
+                        ref strBrowseLocations, "4.0"));
                 }
             }
             catch (COMException e)

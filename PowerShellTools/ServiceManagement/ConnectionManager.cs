@@ -187,6 +187,13 @@ namespace PowerShellTools.ServiceManagement
             }
         }
 
+        public void StopThisSucker()
+        {
+            PowerShellToolsPackage.DebuggerReadyEvent.Reset();
+
+            EnsureClearServiceChannel();
+        }
+
         private void ConnectionExceptionHandler(object sender, EventArgs e)
         {
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
