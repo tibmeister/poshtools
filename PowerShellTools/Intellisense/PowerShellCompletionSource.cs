@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using log4net;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using PowerShellTools.Classification;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Intellisense
 {

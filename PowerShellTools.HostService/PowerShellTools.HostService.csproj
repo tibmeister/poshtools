@@ -127,13 +127,14 @@
     <Compile Include="ServiceManagement\Debugging\DteManager.cs" />
     <Compile Include="ServiceManagement\Debugging\PowershellBreakpointRecord.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingService.cs" />
-    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs" />
+    <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceAttachUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellDebuggingServiceUtilities40.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellRawHost.cs" />
     <Compile Include="ServiceManagement\Debugging\PowerShellServiceHost.cs" />
+    <Compile Include="ServiceManagement\Explorer\PowerShellExplorerService.cs" />
     <Compile Include="ServiceManagement\IntelliSense\PowerShellIntelliSenseService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -183,6 +184,7 @@
       <Name>PowerShellTools.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Build\ProjectAfter.settings" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

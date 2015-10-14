@@ -51,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestSuites", "TestSuites", 
 		TestSuites\ScriptParamAllTypes.ps1 = TestSuites\ScriptParamAllTypes.ps1
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerShellTools.Explorer", "PowerShellTools.Explorer\PowerShellTools.Explorer.csproj", "{DF5BA825-19AF-4B98-AF3A-D93D8F026F8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,10 @@ Global
 		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{528D75E0-71D8-408C-AEAE-485D84E08BD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF5BA825-19AF-4B98-AF3A-D93D8F026F8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF5BA825-19AF-4B98-AF3A-D93D8F026F8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF5BA825-19AF-4B98-AF3A-D93D8F026F8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF5BA825-19AF-4B98-AF3A-D93D8F026F8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,9 +5,9 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using log4net;
 using PowerShellTools.Common;
 using PowerShellTools.Common.Debugging;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Options;
 
 namespace PowerShellTools.ServiceManagement
@@ -30,6 +30,7 @@ namespace PowerShellTools.ServiceManagement
 
         public static PowerShellHostProcess CreatePowerShellHostProcess(BitnessOptions bitness)
         {
+            Log.DebugFormat("Starting host process. Bitness: {0}", bitness);
             PowerShellToolsPackage.DebuggerReadyEvent.Reset();
 
             Process powerShellHostProcess = new Process();
@@ -54,6 +55,8 @@ namespace PowerShellTools.ServiceManagement
                                             Constants.UniqueEndpointArg, EndPointGuid, // For generating a unique endpoint address 
                                             Constants.VsProcessIdArg, Process.GetCurrentProcess().Id,
                                             Constants.ReadyEventUniqueNameArg, hostProcessReadyEventName);
+
+            Log.DebugFormat("Host path: '{0}' Host arguments: '{1}'", path, hostArgs);
 
             powerShellHostProcess.StartInfo.Arguments = hostArgs;
             powerShellHostProcess.StartInfo.FileName = path;
@@ -85,6 +88,7 @@ namespace PowerShellTools.ServiceManagement
 
             if (!success)
             {
+                Log.Warn("Failed to start host!");
                 int processId = powerShellHostProcess.Id;
                 try
                 {

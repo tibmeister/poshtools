@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {
     public class ScriptDocumentContext : IDebugDocumentContext2, IDebugCodeContext2, IEnumDebugCodeContexts2
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptDocumentContext));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptDocumentContext));
         private readonly string _fileName;
         private readonly string _description;
         private readonly int _startLine;

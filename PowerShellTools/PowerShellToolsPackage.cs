@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using log4net;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
@@ -36,7 +36,10 @@ using Threading = System.Threading.Tasks;
 
 using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.DebugEngine.Remote;
+using PowerShellTools.Explorer;
+using PowerShellTools.Common.ServiceManagement.ExplorerContract;
 
 namespace PowerShellTools
 {
@@ -66,6 +69,7 @@ namespace PowerShellTools
     [ProvideAutoLoad(PowerShellTools.Common.Constants.PowerShellReplCreationUiContextString)]
     // 5. PowerShell service execution
     [ProvideService(typeof(IPowerShellService))]
+    [ProvideService(typeof(IPowerShellHostClientService))]
     [ProvideLanguageService(typeof(PowerShellLanguageInfo),
                             PowerShellConstants.LanguageName,
                             101,
@@ -115,11 +119,15 @@ namespace PowerShellTools
     [ProvideDebugPortSupplier("Powershell Remote Debugging (SSL Required)", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
     [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteUnsecuredDebugPortSupplier), PowerShellTools.Common.Constants.UnsecuredPortSupplierId, typeof(RemoteUnsecuredPortPicker))]
     [ProvideDebugPortPicker(typeof(RemotePortPicker))]
-
+    [ProvideToolWindow(
+        typeof(PSCommandExplorerWindow),
+        Style = Microsoft.VisualStudio.Shell.VsDockStyle.Tabbed,
+        Window = "dd9b7693-1385-46a9-a054-06566904f861")]
     public sealed class PowerShellToolsPackage : CommonPackage
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(PowerShellToolsPackage));
         private Lazy<PowerShellService> _powerShellService;
+        private Lazy<PowerShellHostClientService> _powerShellHostClientService;
         private static ScriptDebugger _debugger;
         private ITextBufferFactoryService _textBufferFactoryService;
         private static Dictionary<ICommand, MenuCommand> _commands;
@@ -138,8 +146,6 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
-
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
@@ -229,6 +235,14 @@ namespace PowerShellTools
             }
         }
 
+        public static IPowerShellExplorerService ExplorerService
+        {
+            get
+            {
+                return ConnectionManager.Instance.PowerShellExplorerService;
+            }
+        }
+
         internal DependencyValidator DependencyValidator { get; set; }
 
         internal override LibraryManager CreateLibraryManager(CommonPackage package)
@@ -261,8 +275,14 @@ namespace PowerShellTools
         {
             try
             {
+                EnvDTE.DTE dte = (EnvDTE.DTE)GetGlobalService(typeof(EnvDTE.DTE));
+                Log.InfoFormat("PowerShell Tools Version: {0}", Assembly.GetExecutingAssembly().GetName().Version);
+                Log.InfoFormat("Visual Studio Version: {0}", dte.Version);
+                Log.InfoFormat("Windows Version: {0}", Environment.OSVersion);
+                Log.InfoFormat("Current Culture: {0}", CultureInfo.CurrentCulture);
                 if (!DependencyValidator.Validate())
                 {
+                    Log.Warn("Dependency check failed.");
                     return;
                 }
 
@@ -271,11 +291,13 @@ namespace PowerShellTools
                 InitializeInternal();
 
                 _powerShellService = new Lazy<PowerShellService>(() => { return new PowerShellService(); });
-
+                _powerShellHostClientService = new Lazy<PowerShellHostClientService> (() => { return new PowerShellHostClientService(); });
+                
                 RegisterServices();
             }
             catch (Exception ex)
             {
+                Log.Error("Failed to initialize package.", ex);
                 MessageBox.Show(
                     Resources.PowerShellToolsInitializeFailed + ex,
                     Resources.MessageBoxErrorTitle,
@@ -288,9 +310,9 @@ namespace PowerShellTools
         {
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
 
-            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
+            var diagnosticsPage = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
-            if (page.EnableDiagnosticLogging)
+            if (diagnosticsPage.EnableDiagnosticLogging)
             {
                 DiagnosticConfiguration.EnableDiagnostics();
             }
@@ -316,7 +338,8 @@ namespace PowerShellTools
                             new ExecuteFromSolutionExplorerContextMenuCommand(this.DependencyValidator),
                             new ExecuteWithParametersAsScriptFromSolutionExplorerCommand(adaptersFactory, textManager, this.DependencyValidator),
                             new PrettyPrintCommand(),
-                            new OpenDebugReplCommand());
+                            new OpenDebugReplCommand(),
+                            new OpenExplorerCommand());
 
             try
             {
@@ -329,6 +352,7 @@ namespace PowerShellTools
             }
             catch (AggregateException ae)
             {
+                Log.Error("Failed to initalize PowerShell host.", ae.Flatten());
                 MessageBox.Show(
                     Resources.PowerShellHostInitializeFailed,
                     Resources.MessageBoxErrorTitle,
@@ -338,6 +362,34 @@ namespace PowerShellTools
                 throw ae.Flatten();
             }
         }
+
+        internal void ShowExplorerWindow()
+        {
+            // Get the instance number 0 of this tool window. This window is single instance so this instance
+            // is actually the only one.
+            // The last flag is set to true so that if the tool window does not exists it will be created.
+            ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+            if ((null == window) || (null == window.Frame))
+            {
+                throw new NotSupportedException("");
+            }
+            IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+            Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        }
+
+        //private void ShowToolWindow(object sender, EventArgs e)
+        //{
+        //    // Get the instance number 0 of this tool window. This window is single instance so this instance
+        //    // is actually the only one.
+        //    // The last flag is set to true so that if the tool window does not exists it will be created.
+        //    ToolWindowPane window = this.FindToolWindow(typeof(PSCommandExplorerWindow), 0, true);
+        //    if ((null == window) || (null == window.Frame))
+        //    {
+        //        throw new NotSupportedException("");
+        //    }
+        //    IVsWindowFrame windowFrame = (IVsWindowFrame)window.Frame;
+        //    Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(windowFrame.Show());
+        //}
 
         private void RefreshCommands(params ICommand[] commands)
         {
@@ -364,6 +416,7 @@ namespace PowerShellTools
 
             var serviceContainer = (IServiceContainer)this;
             serviceContainer.AddService(typeof(IPowerShellService), (c, t) => _powerShellService.Value, true);
+            serviceContainer.AddService(typeof(IPowerShellHostClientService), (c, t) => _powerShellHostClientService.Value, true);
         }
 
         private void TextBufferFactoryService_TextBufferCreated(object sender, TextBufferCreatedEventArgs e)
@@ -417,6 +470,11 @@ namespace PowerShellTools
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+
+            if (page.ShouldLoadProfiles)
+            {
+                DebuggingService.LoadProfiles();
+            }
         }
 
         internal void BitnessSettingChanged(object sender, BitnessEventArgs e)

@@ -45,8 +45,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPowerShellHostClientService.cs" />
     <Compile Include="IPowerShellService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PowershellTools.Common\PowerShellTools.Common.csproj">
+      <Project>{f62ab73f-fd18-4c6d-967c-5db4cd14b92b}</Project>
+      <Name>PowerShellTools.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

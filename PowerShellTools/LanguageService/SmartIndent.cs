@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using log4net;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Editor.OptionsExtensionMethods;
 using Microsoft.VisualStudio.TextManager.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Intellisense;
 
 namespace PowerShellTools.LanguageService

@@ -4,13 +4,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management.Automation.Runspaces;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.Common.ServiceManagement.DebuggingContract;
 using PowerShellTools.Options;
 
@@ -74,6 +75,7 @@ namespace PowerShellTools.DebugEngine.Remote
 
                     if (information != null)
                     {
+                        // information now contains list of processes
                         break;
                     }
                     else if (string.IsNullOrEmpty(errorMessage))
@@ -83,6 +85,7 @@ namespace PowerShellTools.DebugEngine.Remote
                     }
                     else
                     {
+                        // error message was returned
                         DialogResult dlgRes = MessageBox.Show(errorMessage, null, MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                         if (dlgRes != DialogResult.Retry)
                         {

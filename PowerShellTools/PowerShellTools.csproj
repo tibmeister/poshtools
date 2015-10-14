@@ -65,6 +65,7 @@
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp</StartArguments>
+    <CopyVsixExtensionFiles>False</CopyVsixExtensionFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -82,9 +83,6 @@
     <DeployExtension>False</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net">
-      <HintPath>..\ThirdParty\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -241,6 +239,7 @@
     <Compile Include="Commands\ExecuteWithParametersAsScriptCommand.cs" />
     <Compile Include="Commands\ExecuteWithParametersAsScriptFromSolutionExplorerCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\OpenExplorerCommand.cs" />
     <Compile Include="Commands\OpenDebugReplCommand.cs" />
     <Compile Include="Commands\PrettyPrintCommand.cs" />
     <Compile Include="Commands\ScriptParameterResult.cs" />
@@ -325,6 +324,7 @@
     <Compile Include="DebugEngine\HostUi.cs" />
     <Compile Include="DebugEngine\DebugEventManager.cs" />
     <Compile Include="DependencyValidator.cs" />
+    <Compile Include="ExplorerServiceEventsHandlerProxy.cs" />
     <Compile Include="Intellisense\EdgeTrackingMode.cs" />
     <Compile Include="Intellisense\ProvideBraceCompletion.cs" />
     <Compile Include="LanguageService\BraceCompletion\BraceCompletionContext.cs" />
@@ -353,7 +353,6 @@
     <Compile Include="Diagnostics\DiagnosticsDialogPage.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Diagnostics\OutputPaneAppender.cs" />
     <Compile Include="EditorImports.cs" />
     <Compile Include="Options\GeneralDialogPage.cs">
       <SubType>Component</SubType>
@@ -620,6 +619,7 @@
     <Compile Include="ServiceManagement\PowershellHostProcessHelper.cs" />
     <Compile Include="Service\ExecutionEngine.cs" />
     <Compile Include="Service\IExecutionEngine.cs" />
+    <Compile Include="Service\PowerShellHostClientService.cs" />
     <Compile Include="Service\PowerShellService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -828,6 +828,10 @@
       <Name>PowerShellTools.Common</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\PowerShellTools.Explorer\PowerShellTools.Explorer.csproj">
+      <Project>{df5ba825-19af-4b98-af3a-d93d8f026f8d}</Project>
+      <Name>PowerShellTools.Explorer</Name>
     </ProjectReference>
     <ProjectReference Include="..\PowerShellTools.HostService.x86\PowerShellTools.HostService.x86.csproj">
       <Project>{528d75e0-71d8-408c-aeae-485d84e08bd2}</Project>

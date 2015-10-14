@@ -14,6 +14,8 @@ namespace PowerShellTools.Common
 
         public const string DebuggingHostRelativeUri = "NamedPipePowershellDebugging";
 
+        public const string ExplorerHostRelativeUri = "NamedPipePowerShellExplorer";
+
         public const string ReadyEventPrefix = "VsPowershellToolProcess:";
 
         // 20 minutes
