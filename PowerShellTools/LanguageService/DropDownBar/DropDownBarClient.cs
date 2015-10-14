@@ -54,6 +54,8 @@ namespace PowerShellTools.LanguageService.DropDownBar
             if (_textView.TextBuffer.ContentType.IsOfType(PowerShellConstants.LanguageName))
             {
                 _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.PowerShellTokenizer, out _tokenizer);
+                if (_tokenizer == null)
+                    _tokenizer = new PowerShellTokenizationService(textView.TextBuffer);
             }
             else
             {
