@@ -31,6 +31,10 @@ namespace PowerShellTools.Options
         [Description("This setting controls the bitness of PowerShell execution within Visual Studio.")]
         public BitnessOptions Bitness { get; set; }
 
+        [DisplayName(@"Load Profiles on Start")]
+        [Description("When false, the host service will not load any profiles on startup.")]
+        public bool ShouldLoadProfiles { get; set; }
+
         protected override void OnApply(DialogPage.PageApplyEventArgs e)
         {
             base.OnApply(e);
@@ -70,6 +74,8 @@ namespace PowerShellTools.Options
             }
 
             BitnessSettingChanged += PowerShellToolsPackage.Instance.BitnessSettingChanged;
+
+            this.ShouldLoadProfiles = true;
         }
     }
 }

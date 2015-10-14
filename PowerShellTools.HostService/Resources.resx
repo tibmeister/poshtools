@@ -142,6 +142,9 @@
   <data name="Error_PipelineBusy" xml:space="preserve">
     <value>Pipeline not executed because a pipeline is already executing. Pipelines cannot be executed concurrently.</value>
   </data>
+  <data name="LocalHostRemoteDebugError" xml:space="preserve">
+    <value>Cannot connect to the localhost with remote debugging. Use the default transport to attach to local processes.</value>
+  </data>
   <data name="ProcessAttachFailErrorBody" xml:space="preserve">
     <value>Unable to attach to specified process.</value>
     <comment>Generic dialog box body for when attaching to a process fails</comment>

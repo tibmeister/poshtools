@@ -1,7 +1,7 @@
 ﻿using System;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.DebugEngine.Remote;
 
 namespace PowerShellTools.DebugEngine

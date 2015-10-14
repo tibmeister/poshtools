@@ -36,10 +36,15 @@
     <VsixDisplayName Condition=" '$(VSTarget)' == '14.0' ">PowerShell Tools for Visual Studio 2015</VsixDisplayName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <VsixVsTarget Condition=" '$(VSTarget)' == '12.0' ">[$(VSTarget)]</VsixVsTarget>
+    <VsixVsTarget Condition=" '$(VSTarget)' == '14.0' ">[$(VSTarget),)</VsixVsTarget>
+  </PropertyGroup>
+
   <!-- Returns the current build version. Used in .vsixmanifests to substitute our build version into them -->
   <!-- TODO: Bring the below into its own .targets file, possibly Vsix.Targets, and import it. -->
   <Target Name="GetVsixVersion" Outputs="$(appveyor_build_version)" />
-  <Target Name="GetVsixVSTarget" Outputs="$(VSTarget)" />
+  <Target Name="GetVsixVSTarget" Outputs="$(VsixVsTarget)" />
   <Target Name="GetVsixGuid" Outputs="$(VsixGuid)" />
   <Target Name="GetVsixDisplayName" Outputs="$(VsixDisplayName)" />
   

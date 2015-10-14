@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
-using log4net;
 using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Editor;
@@ -36,6 +36,7 @@ using Threading = System.Threading.Tasks;
 
 using Microsoft.VisualStudio.Debugger;
 using Microsoft.VisualStudio.Debugger.Interop;
+using PowerShellTools.Common.Logging;
 using PowerShellTools.DebugEngine.Remote;
 using PowerShellTools.Explorer;
 using PowerShellTools.Common.ServiceManagement.ExplorerContract;
@@ -145,8 +146,6 @@ namespace PowerShellTools
         /// </summary>
         public PowerShellToolsPackage()
         {
-            Log.Info(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
-
             _commands = new Dictionary<ICommand, MenuCommand>();
             DependencyValidator = new DependencyValidator();
         }
@@ -276,8 +275,14 @@ namespace PowerShellTools
         {
             try
             {
+                EnvDTE.DTE dte = (EnvDTE.DTE)GetGlobalService(typeof(EnvDTE.DTE));
+                Log.InfoFormat("PowerShell Tools Version: {0}", Assembly.GetExecutingAssembly().GetName().Version);
+                Log.InfoFormat("Visual Studio Version: {0}", dte.Version);
+                Log.InfoFormat("Windows Version: {0}", Environment.OSVersion);
+                Log.InfoFormat("Current Culture: {0}", CultureInfo.CurrentCulture);
                 if (!DependencyValidator.Validate())
                 {
+                    Log.Warn("Dependency check failed.");
                     return;
                 }
 
@@ -292,6 +297,7 @@ namespace PowerShellTools
             }
             catch (Exception ex)
             {
+                Log.Error("Failed to initialize package.", ex);
                 MessageBox.Show(
                     Resources.PowerShellToolsInitializeFailed + ex,
                     Resources.MessageBoxErrorTitle,
@@ -304,9 +310,9 @@ namespace PowerShellTools
         {
             _intelliSenseServiceContext = new IntelliSenseEventsHandlerProxy();
 
-            var page = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
+            var diagnosticsPage = (DiagnosticsDialogPage)GetDialogPage(typeof(DiagnosticsDialogPage));
 
-            if (page.EnableDiagnosticLogging)
+            if (diagnosticsPage.EnableDiagnosticLogging)
             {
                 DiagnosticConfiguration.EnableDiagnostics();
             }
@@ -346,6 +352,7 @@ namespace PowerShellTools
             }
             catch (AggregateException ae)
             {
+                Log.Error("Failed to initalize PowerShell host.", ae.Flatten());
                 MessageBox.Show(
                     Resources.PowerShellHostInitializeFailed,
                     Resources.MessageBoxErrorTitle,
@@ -463,6 +470,11 @@ namespace PowerShellTools
             DebuggerReadyEvent.Set();
 
             PowerShellHostInitialized = true;
+
+            if (page.ShouldLoadProfiles)
+            {
+                DebuggingService.LoadProfiles();
+            }
         }
 
         internal void BitnessSettingChanged(object sender, BitnessEventArgs e)

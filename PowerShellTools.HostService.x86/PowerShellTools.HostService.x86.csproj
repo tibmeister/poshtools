@@ -146,8 +146,8 @@
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingService.cs">
       <Link>ServiceManagement\Debugging\PowerShellDebuggingService.cs</Link>
     </Compile>
-    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs">
-      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceAttachValidator.cs</Link>
+    <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceAttachUtilities.cs">
+      <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceAttachUtilities.cs</Link>
     </Compile>
     <Compile Include="..\PowerShellTools.HostService\ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs">
       <Link>ServiceManagement\Debugging\PowerShellDebuggingServiceEventHandlers.cs</Link>

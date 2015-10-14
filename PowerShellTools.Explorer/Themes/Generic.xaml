@@ -73,7 +73,7 @@
                                         Data="F1 M 0,58 L 2,56 L 6,60 L 13,51 L 15,53 L 6,64 z" />
                             </Border>
                         </BulletDecorator.Bullet>
-                        <ContentPresenter Margin="4,0,0,0"
+                        <ContentPresenter Margin="0"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Left"
                                         RecognizesAccessKey="True"/>

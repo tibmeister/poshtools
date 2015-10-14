@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using EnvDTE;
-using log4net;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.DebugEngine
 {

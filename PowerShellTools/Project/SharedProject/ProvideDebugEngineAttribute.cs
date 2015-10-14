@@ -39,7 +39,10 @@ namespace Microsoft.VisualStudioTools {
 
             engineKey.SetValue("Attach", 1);
             engineKey.SetValue("AddressBP", 0);
-            engineKey.SetValue("AutoSelectPriority", 6);
+
+            // change auto select priority to be above the managed-only engine
+            engineKey.SetValue("AutoSelectPriority", 15);
+
             engineKey.SetValue("CallstackBP", 1);
             engineKey.SetValue("ConditionalBP", 1);
             engineKey.SetValue("Exceptions", 1);
@@ -60,14 +63,17 @@ namespace Microsoft.VisualStudioTools {
             engineKey.SetValue("LoadUnderWOW64", 1);
 
             using (var incompatKey = engineKey.CreateSubkey("IncompatibleList")) {
-                incompatKey.SetValue("guidCOMPlusNativeEng", "{92EF0900-2251-11D2-B72E-0000F87572EF}");
+                // mark the debug engine so you can’t debug with both managed and PowerShell at the same time 
+                incompatKey.SetValue("guidCOMPlusOnlyEng4", "{FB0D4648-F776-4980-95F8-BB7F36EBC1EE}");
                 incompatKey.SetValue("guidCOMPlusOnlyEng", "{449EC4CC-30D2-4032-9256-EE18EB41B62B}");
+                incompatKey.SetValue("guidCOMPlusOnlyEng2", "{5FFF7536-0C87-462D-8FD2-7971D948E6DC}");
                 incompatKey.SetValue("guidScriptEng", "{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}");
-#if DEV10
+                incompatKey.SetValue("guidSilverlightEng", "{032F4B8C-7045-4B24-ACCF-D08C9DA108FE}");
+                incompatKey.SetValue("GUID_WorkflowDebugEngine", "{6589AE11-3B51-494A-AC77-91DA1B53F35A}");
+                incompatKey.SetValue("guidCoreSystemClr", "{2E36F1D4-B23C-435D-AB41-18E608940038}");
                 incompatKey.SetValue("guidNativeOnlyEng", "{3B476D35-A401-11D2-AAD4-00C04F990171}");
-#endif
             }
-            
+
             using (var autoSelectIncompatKey = engineKey.CreateSubkey("AutoSelectIncompatibleList")) {
                 autoSelectIncompatKey.SetValue("guidNativeOnlyEng", "{3B476D35-A401-11D2-AAD4-00C04F990171}");
             }
