@@ -6,11 +6,14 @@ using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Explorer
 {
     internal class PSCommandDetailsViewModel : ViewModel
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(PSCommandDetailsViewModel));
+
         private readonly IDialog _window;
         private readonly IDataProvider _dataProvider;
         private readonly string _title;

@@ -6,11 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using PowerShellTools.Common;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Explorer
 {
     internal static class DragDropHelper
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DragDropHelper));
+
         public static void DoDragDrop(DependencyObject element, object obj, DragDropEffects effects)
         {
             var item = obj as IPowerShellCommand;
@@ -18,7 +21,7 @@ namespace PowerShellTools.Explorer
             if (item != null)
             {
                 var content = item.ToString();
-                DragDrop.DoDragDrop(element, content, DragDropEffects.Copy);
+                DragDropHelper.DoDragDrop(element, content, DragDropEffects.Copy);
             }
         }
 

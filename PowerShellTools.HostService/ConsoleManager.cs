@@ -10,12 +10,14 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.HostService
 {
     [SuppressUnmanagedCodeSecurity]
     internal static class ConsoleManager
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ConsoleManager));
         private const string Kernel32_DllName = "kernel32.dll";
 
         [DllImport(Kernel32_DllName)]
@@ -64,9 +66,9 @@ namespace PowerShellTools.HostService
                         AttachConsole((uint)p.Id);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ServiceCommon.Log("Failed to attach console to PowerShell host process.");
+                    Log.Error("Failed to attach console to PowerShell host process.", ex);
                 }
             }
         }
@@ -89,6 +91,8 @@ namespace PowerShellTools.HostService
                                                 "{0}{1}",
                                                 Constants.ConsoleProcessIdArg, Process.GetCurrentProcess().Id);
 
+                Log.DebugFormat("Starting console. {0} {1}", exeFullPath, hostArgs);
+
                 p.StartInfo.FileName = exeFullPath;
                 p.StartInfo.Arguments = hostArgs;
 
@@ -97,9 +101,9 @@ namespace PowerShellTools.HostService
 
                 p.Start();
             }
-            catch
+            catch (Exception ex)
             {
-                ServiceCommon.Log("Failed to create console for PowerShell host process.");
+                Log.Error("Failed to create console for PowerShell host process.", ex);
             }
 
             return p;

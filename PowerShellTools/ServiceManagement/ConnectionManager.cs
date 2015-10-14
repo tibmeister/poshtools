@@ -151,10 +151,10 @@ namespace PowerShellTools.ServiceManagement
                         _explorerServiceChannelFactory.Open();
                         _powerShellExplorerService = _explorerServiceChannelFactory.CreateChannel();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // Connection has to be established...
-                        Log.Error("Connection establish failed...");
+                        Log.Error("Connection establish failed...", ex);
                         EnsureCloseProcess();
 
                         _powerShellIntelliSenseService = null;

@@ -6,7 +6,7 @@ namespace PowerShellTools.HostService
     {
         public static object RunspaceLock = new object();
 
-        private static readonly ILog Logger = LogManager.GetLogger(typeof (ServiceCommon));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServiceCommon));
 
         /// <summary>
         /// Log a message.

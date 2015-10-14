@@ -16,7 +16,7 @@ namespace PowerShellTools.DebugEngine
     [Guid("08F3B557-C153-4F6C-8745-227439E55E79")]
     public class ScriptProgramProvider : IDebugProgramProvider2
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof (ScriptProgramProvider));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ScriptProgramProvider));
 
         #region Implementation of IDebugProgramProvider2
 

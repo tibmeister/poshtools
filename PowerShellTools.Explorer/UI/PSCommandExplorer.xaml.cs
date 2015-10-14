@@ -7,11 +7,11 @@ namespace PowerShellTools.Explorer
     /// </summary>
     public partial class PSCommandExplorer : UserControl
     {
-        public PSCommandExplorer(IHostWindow hostWindow, IDataProvider dataProvider, IExceptionHandler exceptionHandler)
+        public PSCommandExplorer(IHostWindow hostWindow, IDataProvider dataProvider)
         {
             InitializeComponent();
 
-            DataContext = new PSCommandExplorerViewModel(hostWindow, dataProvider, exceptionHandler); ;
+            DataContext = new PSCommandExplorerViewModel(hostWindow, dataProvider); ;
         }
     }
 }

@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using PowerShellTools.Common;
 using PowerShellTools.Contracts;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.Explorer
 {
     internal sealed class DataProvider : IDataProvider
     {
-        private readonly IExceptionHandler _exceptionHandler;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DataProvider));
         private IPowerShellHostClientService _powerShellHostClientService;
 
-        public DataProvider(IExceptionHandler exceptionHandler)
+        public DataProvider()
         {
-            _exceptionHandler = exceptionHandler;
         }
 
         private IPowerShellHostClientService Host
@@ -39,9 +39,9 @@ namespace PowerShellTools.Explorer
 
                 callback(data);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _exceptionHandler.HandleException(e);
+                Log.Error("Failed to retrive modules", ex);
             }
         }
 
@@ -53,9 +53,9 @@ namespace PowerShellTools.Explorer
 
                 callback(data);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _exceptionHandler.HandleException(e);
+                Log.Error("Failed to retrive commands", ex);
             }
         }
 
@@ -67,9 +67,9 @@ namespace PowerShellTools.Explorer
 
                 callback(data);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _exceptionHandler.HandleException(e);
+                Log.Error("Failed to retrive command help", ex);
             }
         }
 
@@ -81,9 +81,9 @@ namespace PowerShellTools.Explorer
 
                 callback(data);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                _exceptionHandler.HandleException(e);
+                Log.Error("Failed to retrive command metadata", ex);
             }
         }
     }
