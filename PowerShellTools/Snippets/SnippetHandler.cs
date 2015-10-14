@@ -20,7 +20,7 @@ namespace PowerShellTools.Snippets
     [Name("snippets")]
     [ContentType("PowerShell")]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
-    internal class SnippetHandlerProvider : IVsTextViewCreationListener
+    public class SnippetHandlerProvider : IVsTextViewCreationListener
     {
        // internal const string LanguageServiceGuidStr = "AD4D401C-11EA-431F-A412-FAB167156206";
 

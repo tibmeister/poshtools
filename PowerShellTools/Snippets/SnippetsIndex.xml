@@ -5,8 +5,8 @@
             <OnOff>On</OnOff>
             <Installed>true</Installed>
             <Locale>1033</Locale>
-            <DirPath>.\</DirPath>
-            <LocalizedName>Snippets</LocalizedName>
+            <DirPath>Snippets\PowerShell\</DirPath>
+            <LocalizedName>PowerShell</LocalizedName>
         </SnippetDir>
     </Language>
 </SnippetCollection>

@@ -109,13 +109,8 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".ps1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
-    [ProvideLanguageCodeExpansion(GuidList.PowerShellLanguage,
-        "PowerShell",        // Name of language used as registry key
-        0,                   // Resource ID of localized name of language service
-        "PowerShell",        // Name of Language attribute in snippet template
-        @"%TestDocs%\Code Snippets\PowerShell\SnippetsIndex.xml",  // Path to snippets index
-        SearchPaths = @"%TestDocs%\Code Snippets\PowerShell\")]    // Path to snippets
-
+    [ProvideCodeExpansions(GuidList.PowerShellLanguage, false, 106, "PowerShell", @"Snippets\SnippetsIndex.xml", @"Snippets\PowerShell\")]
+    [ProvideCodeExpansionPath("PowerShell", "Test", @"Snippets\PowerShell\")]
     [ProvideDebugPortSupplier("Powershell Remote Debugging (SSL Required)", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
     [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteUnsecuredDebugPortSupplier), PowerShellTools.Common.Constants.UnsecuredPortSupplierId, typeof(RemoteUnsecuredPortPicker))]
     [ProvideDebugPortPicker(typeof(RemotePortPicker))]
