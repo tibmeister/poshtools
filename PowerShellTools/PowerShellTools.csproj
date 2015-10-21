@@ -698,10 +698,6 @@
     <Compile Include="Project\ProvideCodeExpansionsAttribute.cs" />
     <None Include="Resources\WarningIcon.ico" />
     <None Include="Resources\ErrorStatus.png" />
-    <Content Include="snippets.pkgdef">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <Content Include="Snippets\SnippetsIndex.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -863,7 +859,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Project\SharedProject\Debugger\" />
-    <Folder Include="Snippets\1033\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerShell.HostService.Console\PowerShell.HostService.Console.csproj">

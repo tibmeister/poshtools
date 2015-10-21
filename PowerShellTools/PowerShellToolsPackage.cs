@@ -110,7 +110,6 @@ namespace PowerShellTools
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psm1")]
     [ProvideLanguageExtension(typeof(PowerShellLanguageInfo), ".psd1")]
     [ProvideCodeExpansions(GuidList.PowerShellLanguage, false, 106, "PowerShell", @"Snippets\SnippetsIndex.xml", @"Snippets\PowerShell\")]
-    [ProvideCodeExpansionPath("PowerShell", "Test", @"Snippets\PowerShell\")]
     [ProvideDebugPortSupplier("Powershell Remote Debugging (SSL Required)", typeof(RemoteDebugPortSupplier), PowerShellTools.Common.Constants.PortSupplierId, typeof(RemotePortPicker))]
     [ProvideDebugPortSupplier("Powershell Remote Debugging", typeof(RemoteUnsecuredDebugPortSupplier), PowerShellTools.Common.Constants.UnsecuredPortSupplierId, typeof(RemoteUnsecuredPortPicker))]
     [ProvideDebugPortPicker(typeof(RemotePortPicker))]
