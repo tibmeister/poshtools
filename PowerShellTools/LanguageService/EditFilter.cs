@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Management.Automation.Language;
+using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -10,11 +11,13 @@ using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools;
 using PowerShellTools.Classification;
+using PowerShellTools.Common.Logging;
 
 namespace PowerShellTools.LanguageService
 {
     internal sealed class EditFilter : IOleCommandTarget
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (EditFilter));
         private readonly ITextView _textView;
         private readonly IEditorOperations _editorOps;
         private IOleCommandTarget _next;
@@ -57,10 +60,12 @@ namespace PowerShellTools.LanguageService
             {
                 for (int i = 0; i < cCmds; i++)
                 {
-                    if ((VSConstants.VSStd97CmdID)prgCmds[i].cmdID == VSConstants.VSStd97CmdID.GotoDefn)
+                    switch ((VSConstants.VSStd97CmdID)prgCmds[i].cmdID)
                     {
-                        prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
-                        return VSConstants.S_OK;
+                        case VSConstants.VSStd97CmdID.GotoDefn:
+                        case VSConstants.VSStd97CmdID.F1Help:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
+                            return VSConstants.S_OK;
                     }
                 }
             }
@@ -91,13 +96,61 @@ namespace PowerShellTools.LanguageService
                         break;
                 }
             }
-            else if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97 && (VSConstants.VSStd97CmdID)nCmdID == VSConstants.VSStd97CmdID.GotoDefn)
+            else if (pguidCmdGroup == VSConstants.GUID_VSStandardCommandSet97)
             {
-                GoToDefinition();
-                return VSConstants.S_OK;
+                switch ((VSConstants.VSStd97CmdID) nCmdID)
+                {
+                    case VSConstants.VSStd97CmdID.GotoDefn:
+                        GoToDefinition();
+                        return VSConstants.S_OK;
+                    case VSConstants.VSStd97CmdID.F1Help:
+                        GetHelp();
+                        return VSConstants.S_OK;
+                }
             }
 
             return _next.Exec(pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+        }
+
+        private void GetHelp()
+        {
+            Ast script;
+            _textView.TextBuffer.Properties.TryGetProperty(BufferProperties.Ast, out script);
+
+            var caretPosition = _textView.Caret.Position.BufferPosition.Position;
+
+            var reference = script.Find(node =>
+            node is CommandAst &&
+            caretPosition >= node.Extent.StartOffset &&
+            caretPosition <= node.Extent.EndOffset, true) as CommandAst;
+
+            if (reference == null) return;
+
+            Task.Run(() =>
+            {
+                using (var ps = System.Management.Automation.PowerShell.Create())
+                {
+                    string commandName = string.Empty;
+                    try
+                    {
+                        commandName = reference.GetCommandName();
+                        _statusBar.SetText(string.Format(Resources.GetHelp_Searching, commandName));
+                        ps.AddScript(string.Format("Get-Help {0} -Online", commandName));
+                        ps.Invoke();
+
+                        if (ps.HadErrors)
+                        {
+                            _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
+                        Log.Warn(string.Format("Failed to find help for command '{0}'", reference), ex);
+                    }
+                }
+            });
+
         }
 
         private void GoToDefinition()

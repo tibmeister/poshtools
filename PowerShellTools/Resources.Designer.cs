@@ -412,6 +412,24 @@ namespace PowerShellTools {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Help not found for {0}. .
+        /// </summary>
+        public static string GetHelp_HelpNotFound {
+            get {
+                return ResourceManager.GetString("GetHelp_HelpNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Searching Help for {0}....
+        /// </summary>
+        public static string GetHelp_Searching {
+            get {
+                return ResourceManager.GetString("GetHelp_Searching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Function definition is ambiguous. Navigated to first possible definition..
         /// </summary>
         public static string GoToDefinitionAmbiguousMessage {
