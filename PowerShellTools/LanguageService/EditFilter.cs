@@ -128,17 +128,14 @@ namespace PowerShellTools.LanguageService
 
             Task.Run(() =>
             {
-                using (var ps = System.Management.Automation.PowerShell.Create())
-                {
                     string commandName = string.Empty;
                     try
                     {
                         commandName = reference.GetCommandName();
                         _statusBar.SetText(string.Format(Resources.GetHelp_Searching, commandName));
-                        ps.AddScript(string.Format("Get-Help {0} -Online", commandName));
-                        ps.Invoke();
+                        var errors = PowerShellToolsPackage.DebuggingService.Execute(string.Format("Get-Help {0} -Online", commandName));
 
-                        if (ps.HadErrors)
+                        if (!errors)
                         {
                             _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
                         }
@@ -148,7 +145,7 @@ namespace PowerShellTools.LanguageService
                         _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
                         Log.Warn(string.Format("Failed to find help for command '{0}'", reference), ex);
                     }
-                }
+                
             });
 
         }

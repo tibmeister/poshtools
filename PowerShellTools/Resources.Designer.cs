@@ -412,7 +412,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Help not found for {0}. .
+        ///   Looks up a localized string similar to Online Help not found for {0}. .
         /// </summary>
         public static string GetHelp_HelpNotFound {
             get {
@@ -421,7 +421,7 @@ namespace PowerShellTools {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Searching Help for {0}....
+        ///   Looks up a localized string similar to Searching Online Help for {0}....
         /// </summary>
         public static string GetHelp_Searching {
             get {
