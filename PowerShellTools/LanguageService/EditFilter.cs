@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Management.Automation.Language;
 using System.Threading.Tasks;
@@ -137,12 +138,12 @@ namespace PowerShellTools.LanguageService
 
                         if (!errors)
                         {
-                            _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
+                            _statusBar.SetText(string.Format(CultureInfo.CurrentCulture, Resources.GetHelp_HelpNotFound, commandName));
                         }
                     }
                     catch (Exception ex)
                     {
-                        _statusBar.SetText(string.Format(Resources.GetHelp_HelpNotFound, commandName));
+                        _statusBar.SetText(string.Format(CultureInfo.CurrentCulture, Resources.GetHelp_HelpNotFound, commandName));
                         Log.Warn(string.Format("Failed to find help for command '{0}'", reference), ex);
                     }
                 
