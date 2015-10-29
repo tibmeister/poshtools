@@ -10,6 +10,7 @@ namespace PowerShellTools.Project
         Project = 0,
         DataFile = 1,
         Script = 2,
-        Module = 3
+        Module = 3,
+        Test = 4
     }
 }
