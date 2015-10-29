@@ -675,9 +675,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="ItemTemplates\PesterTest.zip">
-      <IncludeInVSIX>true</IncludeInVSIX>
+    <Content Include="ItemTemplates\PowerShellTest.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
-    <DefaultName>TestFixture</DefaultName>
-    <Name>Pester Test Fixture</Name>
+    <DefaultName>PowerShellTest</DefaultName>
+    <Name>PowerShell Test</Name>
     <ProjectType>PowerShell</ProjectType>
     <Description>Pester test fixture file.</Description>
-    <TemplateID>PowerShellTools.PowerShell.PesterTest</TemplateID>
+    <TemplateID>PowerShellTools.PowerShell.PowerShellTest</TemplateID>
     <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
     <AppliesTo>PowerShell | DeploymentProject | Web | DNX</AppliesTo>
     <SortOrder>149</SortOrder>
-    <Icon>PowerShellScript.ico</Icon>
+    <Icon>PowerShellTest.ico</Icon>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
     <ShowByDefault>true</ShowByDefault>
   </TemplateData>
