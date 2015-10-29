@@ -1,16 +1,18 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Diagnostics;
@@ -19,6 +21,10 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VSConstants = Microsoft.VisualStudio.VSConstants;
+#if DEV14_OR_LATER
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
+#endif
 
 namespace Microsoft.VisualStudioTools.Project {
 
@@ -36,12 +42,24 @@ namespace Microsoft.VisualStudioTools.Project {
             }
         }
 
+#if DEV14_OR_LATER
+        protected override ImageMoniker GetIconMoniker(bool open) {
+            if (ItemNode.IsExcluded) {
+                return open ? KnownMonikers.HiddenFolderOpened : KnownMonikers.HiddenFolderClosed;
+            }
+            return base.GetIconMoniker(open);
+        }
+#else
         public override object GetIconHandle(bool open) {
             if (ItemNode.IsExcluded) {
-                return this.ProjectMgr.ImageHandler.GetIconHandle(open ? (int)ProjectNode.ImageName.OpenExcludedFolder : (int)ProjectNode.ImageName.ExcludedFolder);
+                return ProjectMgr.GetIconHandleByName(open ?
+                    ProjectNode.ImageName.OpenExcludedFolder :
+                    ProjectNode.ImageName.ExcludedFolder
+                );
             }
             return base.GetIconHandle(open);
         }
+#endif
 
         internal override int QueryStatusOnNode(Guid cmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result) {
             //Hide Exclude from Project command, show everything else normal Folder node supports
@@ -66,8 +84,11 @@ namespace Microsoft.VisualStudioTools.Project {
             } else if (cmdGroup == ProjectMgr.SharedCommandGuid) {
                 switch ((SharedCommands)cmd) {
                     case SharedCommands.AddExistingFolder:
-                        result |= QueryStatusResult.SUPPORTED | QueryStatusResult.ENABLED;
-                        return VSConstants.S_OK;
+                        if (!ItemNode.IsExcluded) {
+                            result |= QueryStatusResult.SUPPORTED | QueryStatusResult.ENABLED;
+                            return VSConstants.S_OK;
+                        }
+                        break;
                 }
             }
             return base.QueryStatusOnNode(cmdGroup, cmd, pCmdText, ref result);
@@ -83,7 +104,17 @@ namespace Microsoft.VisualStudioTools.Project {
                 switch ((SharedCommands)cmd) {
                     case SharedCommands.AddExistingFolder:
                         return ProjectMgr.AddExistingFolderToNode(this);
-            }
+                    case SharedCommands.OpenCommandPromptHere:
+                        var psi = new ProcessStartInfo(
+                            Path.Combine(
+                                Environment.SystemDirectory,
+                                "cmd.exe"
+                            )
+                        );
+                        psi.WorkingDirectory = FullPathToChildren;
+                        Process.Start(psi);
+                        return VSConstants.S_OK;
+                }
             }
 
             return base.ExecCommandOnNode(cmdGroup, cmd, nCmdexecopt, pvaIn, pvaOut);
@@ -94,6 +125,8 @@ namespace Microsoft.VisualStudioTools.Project {
         /// </summary>
         /// <returns></returns>
         internal override int ExcludeFromProject() {
+            ProjectMgr.Site.GetUIThread().MustBeCalledFromUIThread();
+
             Debug.Assert(this.ProjectMgr != null, "The project item " + this.ToString() + " has not been initialised correctly. It has a null ProjectMgr");
             if (!ProjectMgr.QueryEditProjectFile(false) ||
                 !ProjectMgr.QueryFolderRemove(Parent, Url)) {
@@ -111,8 +144,8 @@ namespace Microsoft.VisualStudioTools.Project {
             ResetNodeProperties();
             ItemNode.RemoveFromProjectFile();
             if (!Directory.Exists(CommonUtils.TrimEndSeparator(Url))) {
-                Parent.RemoveChild(this);
                 ProjectMgr.OnItemDeleted(this);
+                Parent.RemoveChild(this);
             } else {
                 ItemNode = new AllFilesProjectElement(Url, ItemNode.ItemTypeName, ProjectMgr);
                 if (!ProjectMgr.IsShowingAllFiles) {
@@ -122,7 +155,18 @@ namespace Microsoft.VisualStudioTools.Project {
                 ProjectMgr.ReDrawNode(this, UIHierarchyElement.Icon);
                 ProjectMgr.OnPropertyChanged(this, (int)__VSHPROPID.VSHPROPID_IsNonMemberItem, 0);
             }
+            ((IVsUIShell)GetService(typeof(SVsUIShell))).RefreshPropertyBrowser(0);
+
             return VSConstants.S_OK;
+        }
+
+        internal override int ExcludeFromProjectWithProgress() {
+            using (new WaitDialog(
+                "Excluding files and folders...",
+                "Excluding files and folders in your project, this may take several seconds...",
+                ProjectMgr.Site)) {
+                return base.ExcludeFromProjectWithProgress();
+            }
         }
 
         internal override int IncludeInProject(bool includeChildren) {
@@ -141,7 +185,7 @@ namespace Microsoft.VisualStudioTools.Project {
 
             ResetNodeProperties();
             ItemNode = ProjectMgr.CreateMsBuildFileItem(
-                CommonUtils.GetRelativeDirectoryPath(ProjectMgr.ProjectHome, Url), 
+                CommonUtils.GetRelativeDirectoryPath(ProjectMgr.ProjectHome, Url),
                 ProjectFileConstants.Folder
             );
             IsVisible = true;
@@ -157,7 +201,22 @@ namespace Microsoft.VisualStudioTools.Project {
             }
             ProjectMgr.ReDrawNode(this, UIHierarchyElement.Icon);
             ProjectMgr.OnPropertyChanged(this, (int)__VSHPROPID.VSHPROPID_IsNonMemberItem, 0);
+            ((IVsUIShell)GetService(typeof(SVsUIShell))).RefreshPropertyBrowser(0);
+
+            // On include, the folder should be added to source control.
+            this.ProjectMgr.Tracker.OnFolderAdded(this.Url, VSADDDIRECTORYFLAGS.VSADDDIRECTORYFLAGS_NoFlags);
+
             return VSConstants.S_OK;
+        }
+
+        internal override int IncludeInProjectWithProgress(bool includeChildren) {
+            using (new WaitDialog(
+                "Including files and folders...",
+                "Including files and folders to your project, this may take several seconds...",
+                ProjectMgr.Site)) {
+
+                return IncludeInProject(includeChildren);
+            }
         }
 
         public override void RenameFolder(string newName) {
@@ -171,7 +230,7 @@ namespace Microsoft.VisualStudioTools.Project {
 
             if (ProjectMgr.TryDeactivateSymLinkWatcher(this)) {
                 ProjectMgr.CreateSymLinkWatcher(Url);
-        }
+            }
         }
 
         public override void Remove(bool removeFromStorage) {
@@ -194,7 +253,7 @@ namespace Microsoft.VisualStudioTools.Project {
         internal override bool CanDeleteItem(__VSDELETEITEMOPERATION deleteOperation) {
             return deleteOperation == __VSDELETEITEMOPERATION.DELITEMOP_DeleteFromStorage;
         }
-        
+
         public new CommonProjectNode ProjectMgr {
             get {
                 return (CommonProjectNode)base.ProjectMgr;

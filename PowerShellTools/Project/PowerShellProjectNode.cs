@@ -95,7 +95,7 @@ namespace PowerShellTools.Project
         {
             var node = new PowerShellFileNode(this, item);
 
-            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+            //node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
 
             return node;
         }
@@ -103,16 +103,18 @@ namespace PowerShellTools.Project
         public override CommonFileNode CreateNonCodeFileNode(ProjectElement item)
         {
             var node = new PowerShellFileNode(this, item);
-            node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
+            //node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
 
             return node;
         }
+
+        internal override string IssueTrackerUrl { get;  }
 
         public override int ImageIndex
         {
             get
             {
-                return CommonProjectNode.ImageOffset + (int)ImageListIndex.Project;
+                return (int)ImageListIndex.Project;
             }
         }
 

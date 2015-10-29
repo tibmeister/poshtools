@@ -1,20 +1,23 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -34,7 +37,6 @@ namespace Microsoft.VisualStudioTools.Project {
     /// Manages the CopyPaste and Drag and Drop scenarios for a Project.
     /// </summary>
     /// <remarks>This is a partial class.</remarks>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     internal partial class ProjectNode : IVsUIHierWinClipboardHelperEvents {
         private uint copyPasteCookie;
         private DropDataType _dropType;
@@ -115,7 +117,7 @@ namespace Microsoft.VisualStudioTools.Project {
                 return VSConstants.S_OK;
             }
 
-            if (this.isClosed || this.site == null) {
+            if (this.isClosed) {
                 return VSConstants.E_UNEXPECTED;
             }
 
@@ -171,13 +173,12 @@ namespace Microsoft.VisualStudioTools.Project {
                     OLEMSGICON icon = OLEMSGICON.OLEMSGICON_CRITICAL;
                     OLEMSGBUTTON buttons = OLEMSGBUTTON.OLEMSGBUTTON_OK;
                     OLEMSGDEFBUTTON defaultButton = OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST;
-                    VsShellUtilities.ShowMessageBox(this.Site, title, message, icon, buttons, defaultButton);
+                    Utilities.ShowMessageBox(this.Site, title, message, icon, buttons, defaultButton);
                 }
 
                 returnValue = VSConstants.E_FAIL;
             }
 
-            ItemsDraggedOrCutOrCopied.Clear();
             _dragging = false;
 
             return returnValue;
@@ -256,19 +257,16 @@ namespace Microsoft.VisualStudioTools.Project {
             fCancelDrop = 0;
             bool dirty = false;
             foreach (HierarchyNode node in this.ItemsDraggedOrCutOrCopied) {
-                bool isDirty, isOpen, isOpenedByUs;
-                uint docCookie;
-                IVsPersistDocData ppIVsPersistDocData;
-                DocumentManager manager = node.GetDocumentManager();
                 if (node.IsLinkFile) {
                     continue;
                 }
-                if (manager != null) {
-                    manager.GetDocInfo(out isOpen, out isDirty, out isOpenedByUs, out docCookie, out ppIVsPersistDocData);
-                    if (isDirty && isOpenedByUs) {
-                        dirty = true;
-                        break;
-                    }
+
+                DocumentManager manager = node.GetDocumentManager();
+                if (manager != null &&
+                    manager.IsDirty &&
+                    manager.IsOpenedByUs) {
+                    dirty = true;
+                    break;
                 }
             }
 
@@ -278,12 +276,12 @@ namespace Microsoft.VisualStudioTools.Project {
             }
 
             // Prompt to save if there are dirty docs
-            string message = SR.GetString(SR.SaveModifiedDocuments, CultureInfo.CurrentUICulture);
+            string message = SR.GetString(SR.SaveModifiedDocuments);
             string title = string.Empty;
             OLEMSGICON icon = OLEMSGICON.OLEMSGICON_WARNING;
             OLEMSGBUTTON buttons = OLEMSGBUTTON.OLEMSGBUTTON_YESNOCANCEL;
             OLEMSGDEFBUTTON defaultButton = OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST;
-            int result = VsShellUtilities.ShowMessageBox(Site, title, message, icon, buttons, defaultButton);
+            int result = Utilities.ShowMessageBox(Site, title, message, icon, buttons, defaultButton);
             switch (result) {
                 case NativeMethods.IDYES:
                     break;
@@ -291,10 +289,12 @@ namespace Microsoft.VisualStudioTools.Project {
                 case NativeMethods.IDNO:
                     return VSConstants.S_OK;
 
-                case NativeMethods.IDCANCEL: goto default;
+                case NativeMethods.IDCANCEL:
+                    goto default;
 
                 default:
                     fCancelDrop = 1;
+                    ItemsDraggedOrCutOrCopied.Clear();
                     return VSConstants.S_OK;
             }
 
@@ -337,9 +337,9 @@ namespace Microsoft.VisualStudioTools.Project {
                     node.Remove(true);
                 }
                 ItemsDraggedOrCutOrCopied.Clear();
+                ClearCopyCutState();
             }
 
-            ClearCopyCutState();
             return VSConstants.S_OK;
         }
 
@@ -351,6 +351,7 @@ namespace Microsoft.VisualStudioTools.Project {
         /// <returns>If the method succeeds, it returns S_OK. If it fails, it returns an error code. </returns>
         public virtual int OnClear(int wasCut) {
             if (wasCut != 0) {
+                AssertHasParentHierarchy();
                 IVsUIHierarchyWindow w = UIHierarchyUtilities.GetUIHierarchyWindow(this.site, HierarchyNode.SolutionExplorer);
                 if (w != null) {
                     foreach (HierarchyNode node in ItemsDraggedOrCutOrCopied) {
@@ -503,11 +504,24 @@ namespace Microsoft.VisualStudioTools.Project {
                     }
                 }
 
+                bool result = true;
+                bool? overwrite = null;
                 foreach (var addition in additions) {
-                    addition.DoAddition();
+                    try {
+                        addition.DoAddition(ref overwrite);
+                    } catch (CancelPasteException) {
+                        return false;
+                    }
+                    if (addition is SkipOverwriteAddition) {
+                        result = false;
+                    }
                 }
 
-                return true;
+                return result;
+            }
+
+            [Serializable]
+            sealed class CancelPasteException : Exception {
             }
 
             /// <summary>
@@ -536,9 +550,9 @@ namespace Microsoft.VisualStudioTools.Project {
                     if (targetFolderNode.FullPathToChildren.StartsWith(folder, StringComparison.OrdinalIgnoreCase) &&
                         !String.Equals(targetFolderNode.FullPathToChildren, folder, StringComparison.OrdinalIgnoreCase)) {
                         // dragging a folder into a child, that's not allowed
-                        VsShellUtilities.ShowMessageBox(
+                        Utilities.ShowMessageBox(
                             Project.Site,
-                            String.Format("Cannot move '{0}'. The destination folder is a subfolder of the source folder.", Path.GetFileName(CommonUtils.TrimEndSeparator(folder))),
+                            SR.GetString(SR.CannotMoveIntoSubfolder, CommonUtils.GetFileOrDirectoryName(folder)),
                             null,
                             OLEMSGICON.OLEMSGICON_CRITICAL,
                             OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -547,11 +561,11 @@ namespace Microsoft.VisualStudioTools.Project {
                     }
                 }
 
-                var targetPath = Path.Combine(targetFolderNode.FullPathToChildren, Path.GetFileName(CommonUtils.TrimEndSeparator(folder)));
+                var targetPath = Path.Combine(targetFolderNode.FullPathToChildren, CommonUtils.GetFileOrDirectoryName(folder));
                 if (File.Exists(targetPath)) {
-                    VsShellUtilities.ShowMessageBox(
+                    Utilities.ShowMessageBox(
                        Project.Site,
-                       String.Format("Unable to add '{0}'. A file with that name already exists.", Path.GetFileName(CommonUtils.TrimEndSeparator(folder))),
+                       SR.GetString(SR.CannotAddFileExists, CommonUtils.GetFileOrDirectoryName(folder)),
                        null,
                        OLEMSGICON.OLEMSGICON_CRITICAL,
                        OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -564,9 +578,9 @@ namespace Microsoft.VisualStudioTools.Project {
                         if (targetPath == folderToAdd) {
                             CannotMoveSameLocation(folderToAdd);
                         } else {
-                            VsShellUtilities.ShowMessageBox(
+                            Utilities.ShowMessageBox(
                                Project.Site,
-                               String.Format("Cannot move the folder '{0}'. A folder with that name already exists in the destination directory.", Path.GetFileName(CommonUtils.TrimEndSeparator(folder))),
+                               SR.GetString(SR.CannotMoveFolderExists, CommonUtils.GetFileOrDirectoryName(folder)),
                                null,
                                OLEMSGICON.OLEMSGICON_CRITICAL,
                                OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -575,11 +589,10 @@ namespace Microsoft.VisualStudioTools.Project {
                         return null;
                     }
 
-                    var dialog = new OverwriteFileDialog(String.Format(
-@"This folder already contains a folder called '{0}'
-
-If the files in the existing folder have the same names as files in the 
-folder you are copying, do you want to replace the existing files?", Path.GetFileName(CommonUtils.TrimEndSeparator(folder))), false);
+                    var dialog = new OverwriteFileDialog(
+                        SR.GetString(SR.OverwriteFilesInExistingFolder, CommonUtils.GetFileOrDirectoryName(folder)),
+                        false
+                    );
                     dialog.Owner = Application.Current.MainWindow;
                     var res = dialog.ShowDialog();
                     if (res == null) {
@@ -587,12 +600,12 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                         return null;
                     } else if (!dialog.ShouldOverwrite) {
                         // no, don't copy the folder
-                        return NopAddition.Instance;
+                        return SkipOverwriteAddition.Instance;
                     }
                     // otherwise yes, and we'll prompt about the files.
                 }
 
-                string targetFileName = Path.GetFileName(CommonUtils.TrimEndSeparator(folder));
+                string targetFileName = CommonUtils.GetFileOrDirectoryName(folder);
                 if (Utilities.IsSameComObject(Project, sourceHierarchy) &&
                     String.Equals(targetFolderNode.FullPathToChildren, folder, StringComparison.OrdinalIgnoreCase)) {
                     // copying a folder onto its self, make a copy
@@ -606,11 +619,11 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     ReportMissingItem(folder);
                     return null;
                 }
-                
+
                 if (Path.Combine(targetFolderNode.FullPathToChildren, targetFileName).Length >= NativeMethods.MAX_FOLDER_PATH) {
-                    VsShellUtilities.ShowMessageBox(
+                    Utilities.ShowMessageBox(
                         Project.Site,
-                        "The folder name is too long.",
+                        SR.GetString(SR.FolderPathTooLongShortMessage),
                         null,
                         OLEMSGICON.OLEMSGICON_CRITICAL,
                         OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -631,9 +644,9 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             }
 
             private void ReportMissingItem(string folder) {
-                VsShellUtilities.ShowMessageBox(
+                Utilities.ShowMessageBox(
                     Project.Site,
-                    String.Format("The source URL '{0}' could not be found.", Path.GetFileName(CommonUtils.TrimEndSeparator(folder))),
+                    SR.GetString(SR.SourceUrlNotFound, CommonUtils.GetFileOrDirectoryName(folder)),
                     null,
                     OLEMSGICON.OLEMSGICON_CRITICAL,
                     OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -659,7 +672,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     string source;
                     ErrorHandler.ThrowOnFailure(((IVsProject)sourceHierarchy).GetMkDocument(itemId, out source));
                     if (name == null) {
-                        name = Path.GetFileName(CommonUtils.TrimEndSeparator(source));
+                        name = CommonUtils.GetFileOrDirectoryName(source);
                     }
 
                     Guid guidType;
@@ -694,6 +707,13 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                             return false;
                         }
 
+                        if (!Project.Tracker.CanRenameItem(
+                            source,
+                            newPath,
+                            VSRENAMEFILEFLAGS.VSRENAMEFILEFLAGS_Directory)) {
+                            return false;
+                        }
+
                         additions.Add(new FolderAddition(Project, Path.Combine(targetPath, name), source, DropEffect, nestedAdditions.ToArray()));
                     }
 
@@ -718,14 +738,14 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             private static string GetCopyName(string existingFullPath) {
                 string newDir, name, extension;
                 if (CommonUtils.HasEndSeparator(existingFullPath)) {
-                    name = Path.GetFileName(CommonUtils.TrimEndSeparator(existingFullPath));
+                    name = CommonUtils.GetFileOrDirectoryName(existingFullPath);
                     extension = "";
                 } else {
                     extension = Path.GetExtension(existingFullPath);
                     name = Path.GetFileNameWithoutExtension(existingFullPath);
                 }
 
-                string folder = Path.GetDirectoryName(CommonUtils.TrimEndSeparator(existingFullPath));
+                string folder = CommonUtils.GetParent(existingFullPath);
                 int copyCount = 1;
                 do {
                     string newName = name + " - Copy";
@@ -759,22 +779,52 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     DropEffect = dropEffect;
                 }
 
-                public override void DoAddition() {
-                    var newNode = Project.CreateFolderNodes(NewFolderPath);
+                public override void DoAddition(ref bool? overwrite) {
+                    bool wasExpanded = false;
+                    HierarchyNode newNode;
+                    var sourceFolder = Project.FindNodeByFullPath(SourceFolder) as FolderNode;
+                    if (sourceFolder == null || DropEffect != DropEffect.Move) {
+                        newNode = Project.CreateFolderNodes(NewFolderPath);
+                    } else {
+                        // Rename the folder & reparent our existing FolderNode w/ potentially w/ a new ID,
+                        // but don't update the children as we'll handle that w/ our file additions...
+                        wasExpanded = sourceFolder.GetIsExpanded();
+                        Directory.CreateDirectory(NewFolderPath);
+                        sourceFolder.ReparentFolder(NewFolderPath);
 
-                    foreach (var addition in Additions) {
-                        addition.DoAddition();
+                        sourceFolder.ExpandItem(wasExpanded ? EXPANDFLAGS.EXPF_ExpandFolder : EXPANDFLAGS.EXPF_CollapseFolder);
+                        newNode = sourceFolder;
                     }
 
-                    var sourceFolder = Project.FindNodeByFullPath(SourceFolder);
+                    foreach (var addition in Additions) {
+                        addition.DoAddition(ref overwrite);
+                    }
+
                     if (sourceFolder != null) {
                         if (sourceFolder.IsNonMemberItem) {
                             // copying or moving an existing excluded folder, new folder
                             // is excluded too.
                             ErrorHandler.ThrowOnFailure(newNode.ExcludeFromProject());
-                        } else if (DropEffect == DropEffect.Move) {
-                            sourceFolder.Remove(true);
+                        } else if (sourceFolder.Parent.IsNonMemberItem) {
+                            // We've moved an included folder to a show all files folder,
+                            //     add the parent to the project   
+                            ErrorHandler.ThrowOnFailure(sourceFolder.Parent.IncludeInProject(false));
                         }
+
+                        if (DropEffect == DropEffect.Move) {
+                            Directory.Delete(SourceFolder);
+
+                            // we just handled the delete, the updated folder has the new filename,
+                            // and we don't want to delete where we just moved stuff...
+                            Project.ItemsDraggedOrCutOrCopied.Remove(sourceFolder);
+                        }
+                    }
+
+                    // Send OnItemRenamed for the folder now, after all of the children have been renamed
+                    Project.Tracker.OnItemRenamed(SourceFolder, NewFolderPath, VSRENAMEFILEFLAGS.VSRENAMEFILEFLAGS_Directory);
+
+                    if (sourceFolder != null && Project.ParentHierarchy != null) {
+                        sourceFolder.ExpandItem(wasExpanded ? EXPANDFLAGS.EXPF_ExpandFolder : EXPANDFLAGS.EXPF_CollapseFolder);
                     }
                 }
             }
@@ -867,6 +917,13 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
 
                 // This will throw invalid cast exception if the hierrachy is not a project.
                 IVsProject project = (IVsProject)hierarchy;
+                object isLinkValue;
+                bool isLink = false;
+                if (ErrorHandler.Succeeded(((IVsHierarchy)project).GetProperty(itemidLoc, (int)__VSHPROPID2.VSHPROPID_IsLinkFile, out isLinkValue))) {
+                    if (isLinkValue is bool) {
+                        isLink = (bool)isLinkValue;
+                    }
+                }
 
                 string moniker;
                 ErrorHandler.ThrowOnFailure(project.GetMkDocument(itemidLoc, out moniker));
@@ -876,7 +933,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                 }
 
                 if (!File.Exists(moniker)) {
-                    VsShellUtilities.ShowMessageBox(
+                    Utilities.ShowMessageBox(
                             Project.Site,
                             String.Format("The item '{0}' does not exist in the project directory. It may have been moved, renamed or deleted.", Path.GetFileName(moniker)),
                             null,
@@ -886,30 +943,93 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     return null;
                 }
 
-                string newPath = Path.Combine(targetFolder, Path.GetFileName(moniker));
-                var existingChild = Project.FindNodeByFullPath(moniker);
-                if (existingChild != null && existingChild.IsLinkFile) {
-                    if (DropEffect == DropEffect.Move) {
-                        // moving a link file, just update it's location in the hierarchy
-                        return new ReparentLinkedFileAddition(Project, targetFolder, moniker);
-                    } else {
-                        // 
-                        VsShellUtilities.ShowMessageBox(
-                                Project.Site,
-                                String.Format("Cannot copy linked files within the same project. You cannot have more than one link to the same file in a project."),
-                                null,
-                                OLEMSGICON.OLEMSGICON_CRITICAL,
-                                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                // Check that the source and destination paths aren't the same since we can't move an item to itself.
+                // If they are in fact the same location, throw an error that copy/move will not work correctly.
+                if (DropEffect == DropEffect.Move && !CommonUtils.IsSamePath(Path.GetDirectoryName(moniker), Path.GetDirectoryName(targetFolder))) {
+                    try {
+                        string sourceLinkTarget = NativeMethods.GetAbsolutePathToDirectory(Path.GetDirectoryName(moniker));
+                        string destinationLinkTarget = null;
+
+                        // if the directory doesn't exist, just skip this.  We will create it later.
+                        if (Directory.Exists(targetFolder)) {
+                            try {
+                                destinationLinkTarget = NativeMethods.GetAbsolutePathToDirectory(targetFolder);
+                            } catch (FileNotFoundException) {
+                                // This can occur if the user had a symlink'd directory and deleted the backing directory.
+                                Utilities.ShowMessageBox(
+                                            Project.Site,
+                                            String.Format(
+                                                "Unable to find the destination folder."),
+                                            null,
+                                            OLEMSGICON.OLEMSGICON_CRITICAL,
+                                            OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                                            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                                return null;
+                            }
+                        }
+
+                        // If the paths are the same, we can't really move the file...
+                        if (destinationLinkTarget != null && CommonUtils.IsSamePath(sourceLinkTarget, destinationLinkTarget)) {
+                            CannotMoveSameLocation(moniker);
+                            return null;
+                        }
+                    } catch (Exception e) {
+                        if (e.IsCriticalException()) {
+                            throw;
+                        }
+                        TaskDialog.ForException(Project.Site, e, String.Empty, Project.IssueTrackerUrl).ShowModal();
                         return null;
                     }
-                } else if (File.Exists(newPath) && CommonUtils.IsSamePath(newPath, moniker)) {
+                }
+
+                // Begin the move operation now that we are past pre-checks.
+                var existingChild = Project.FindNodeByFullPath(moniker);
+                if (isLink) {
+                    // links we just want to update the link node for...
+                    if (existingChild != null) {
+                        if (ComUtilities.IsSameComObject(Project, project)) {
+                            if (DropEffect != DropEffect.Move) {
+                                Utilities.ShowMessageBox(
+                                        Project.Site,
+                                        String.Format("Cannot copy linked files within the same project. You cannot have more than one link to the same file in a project."),
+                                        null,
+                                        OLEMSGICON.OLEMSGICON_CRITICAL,
+                                        OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                                        OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                                return null;
+                            }
+                        } else {
+                            Utilities.ShowMessageBox(
+                                    Project.Site,
+                                    String.Format("There is already a link to '{0}'. You cannot have more than one link to the same file in a project.", moniker),
+                                    null,
+                                    OLEMSGICON.OLEMSGICON_CRITICAL,
+                                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                            return null;
+                        }
+                    }
+
+                    return new ReparentLinkedFileAddition(Project, targetFolder, moniker);
+                }
+
+                string newPath = Path.Combine(targetFolder, Path.GetFileName(moniker));
+                if (File.Exists(newPath) &&  
+                    CommonUtils.IsSamePath(
+                        NativeMethods.GetAbsolutePathToDirectory(newPath), 
+                        NativeMethods.GetAbsolutePathToDirectory(moniker))) {
                     newPath = GetCopyName(newPath);
                 }
 
                 bool ok = false;
                 if (DropEffect == DropEffect.Move && Utilities.IsSameComObject(project, Project)) {
-                    ok = Project.Tracker.CanRenameItem(moniker, newPath, VSRENAMEFILEFLAGS.VSRENAMEFILEFLAGS_NoFlags);
+                    if (existingChild != null && existingChild.ItemNode != null && existingChild.ItemNode.IsExcluded) {
+                        // https://nodejstools.codeplex.com/workitem/271
+                        // The item is excluded, so we don't need to ask if we can rename it.
+                        ok = true;
+                    } else {
+                        ok = Project.Tracker.CanRenameItem(moniker, newPath, VSRENAMEFILEFLAGS.VSRENAMEFILEFLAGS_NoFlags);
+                    }
                 } else {
                     ok = Project.Tracker.CanAddItems(
                         new[] { newPath },
@@ -930,12 +1050,8 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                         bool? overwrite = OverwriteAllItems;
 
                         if (overwrite == null) {
-                            var dialog = new OverwriteFileDialog(String.Format("A file with the name '{0}' already exists.  Do you want to replace it?", Path.GetFileName(moniker)), true);
-                            dialog.Owner = Application.Current.MainWindow;
-                            bool? dialogResult = dialog.ShowDialog();
-
-                            if (dialogResult != null && !dialogResult.Value) {
-                                // user cancelled
+                            OverwriteFileDialog dialog;
+                            if (!PromptOverwriteFile(moniker, out dialog)) {
                                 return null;
                             }
 
@@ -949,14 +1065,23 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                         if (overwrite.Value) {
                             return new OverwriteFileAddition(Project, targetFolder, DropEffect, moniker, Path.GetFileName(newPath), project);
                         } else {
-                            return NopAddition.Instance;
+                            return SkipOverwriteAddition.Instance;
                         }
+                    } else if (Directory.Exists(newPath)) {
+                        Utilities.ShowMessageBox(
+                            Project.Site,
+                            SR.GetString(SR.DirectoryExists, CommonUtils.GetFileOrDirectoryName(newPath)),
+                            null,
+                            OLEMSGICON.OLEMSGICON_CRITICAL,
+                            OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                        return null;
                     }
 
                     if (newPath.Length >= NativeMethods.MAX_PATH) {
-                        VsShellUtilities.ShowMessageBox(
+                        Utilities.ShowMessageBox(
                             Project.Site,
-                            "The filename is too long.",
+                            SR.GetString(SR.PathTooLongShortMessage),
                             null,
                             OLEMSGICON.OLEMSGICON_CRITICAL,
                             OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -966,6 +1091,24 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     return new FileAddition(Project, targetFolder, DropEffect, moniker, Path.GetFileName(newPath), project);
                 }
                 return null;
+            }
+
+            /// <summary>
+            /// Prompts if the file should be overwriten.  Returns false if the user cancels, true if the user answered yes/no
+            /// </summary>
+            /// <param name="filename"></param>
+            /// <param name="dialog"></param>
+            /// <returns></returns>
+            private static bool PromptOverwriteFile(string filename, out OverwriteFileDialog dialog) {
+                dialog = new OverwriteFileDialog(SR.GetString(SR.FileAlreadyExists, Path.GetFileName(filename)), true);
+                dialog.Owner = Application.Current.MainWindow;
+                bool? dialogResult = dialog.ShowDialog();
+
+                if (dialogResult != null && !dialogResult.Value) {
+                    // user cancelled
+                    return false;
+                }
+                return true;
             }
 
             private bool IsBadMove(string targetFolder, string moniker, bool file) {
@@ -990,9 +1133,9 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             }
 
             private void CannotMoveSameLocation(string moniker) {
-                VsShellUtilities.ShowMessageBox(
+                Utilities.ShowMessageBox(
                     Project.Site,
-                    String.Format("Cannot move '{0}'. The destination folder is the same as the source folder.", Path.GetFileName(CommonUtils.TrimEndSeparator(moniker))),
+                    SR.GetString(SR.CannotMoveIntoSameDirectory, CommonUtils.GetFileOrDirectoryName(moniker)),
                     null,
                     OLEMSGICON.OLEMSGICON_CRITICAL,
                     OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -1006,13 +1149,22 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             }
 
             abstract class Addition {
-                public abstract void DoAddition();
+                public abstract void DoAddition(ref bool? overwrite);
             }
 
-            class NopAddition : Addition {
-                internal static NopAddition Instance = new NopAddition();
+            /// <summary>
+            /// Addition which doesn't add anything.  It's used when the user answers no to
+            /// overwriting a file, which results in us reporting an overall failure to the 
+            /// copy and paste.  This causes the file not to be deleted if it was a move.
+            /// 
+            /// This also means that if you're moving multiple files and answer no to one 
+            /// of them but not the other that the files are not removed from the source
+            /// hierarchy.
+            /// </summary>
+            class SkipOverwriteAddition : Addition {
+                internal static SkipOverwriteAddition Instance = new SkipOverwriteAddition();
 
-                public override void DoAddition() {
+                public override void DoAddition(ref bool? overwrite) {
                 }
             }
 
@@ -1027,19 +1179,28 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     Moniker = moniker;
                 }
 
-                public override void DoAddition() {
+                public override void DoAddition(ref bool? overwrite) {
                     var existing = Project.FindNodeByFullPath(Moniker);
-                    existing.Parent.RemoveChild(existing);
-                    Project.OnItemDeleted(existing);
+                    bool created = false;
+                    if (existing != null) {
+                        Project.OnItemDeleted(existing);
+                        existing.Parent.RemoveChild(existing);
+                        Project.Site.GetUIThread().MustBeCalledFromUIThread();
+                        existing.ID = Project.ItemIdMap.Add(existing);
+                    } else {
+                        existing = Project.CreateFileNode(Moniker);
+                        created = true;
+                    }
 
-                    existing.ID = Project.ItemIdMap.Add(existing);
-                    
+
                     var newParent = TargetFolder == Project.ProjectHome ? Project : Project.FindNodeByFullPath(TargetFolder);
                     newParent.AddChild(existing);
-                    Project.ItemsDraggedOrCutOrCopied.Remove(existing); // we don't need to remove the file after Paste
+                    if (Project.ItemsDraggedOrCutOrCopied != null) {
+                        Project.ItemsDraggedOrCutOrCopied.Remove(existing); // we don't need to remove the file after Paste
+                    }
 
                     var link = existing.ItemNode.GetMetadata(ProjectFileConstants.Link);
-                    if (link != null) {
+                    if (link != null || created) {
                         // update the link to the new location within solution explorer
                         existing.ItemNode.SetMetadata(
                             ProjectFileConstants.Link,
@@ -1072,22 +1233,96 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     NewFileName = newFileName;
                 }
 
-                public override void DoAddition() {
+                public override void DoAddition(ref bool? overwrite) {
                     string newPath = Path.Combine(TargetFolder, NewFileName);
+
+                    DirectoryInfo dirInfo = null;                    
+                        
+                    try {
+                        dirInfo = Directory.CreateDirectory(TargetFolder);
+                    } catch (ArgumentException) {
+                    } catch (UnauthorizedAccessException) {
+                    } catch (IOException) {
+                    } catch (NotSupportedException) {
+                    }
+
+                    if (dirInfo == null) {
+                        //Something went wrong and we failed to create the new directory
+                        //   Inform the user and cancel the addition
+                        Utilities.ShowMessageBox(
+                                            Project.Site,
+                                            SR.GetString(SR.FolderCannotBeCreatedOnDisk, CommonUtils.GetFileOrDirectoryName(TargetFolder)),
+                                            null,
+                                            OLEMSGICON.OLEMSGICON_CRITICAL,
+                                            OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                                            OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                        return;
+                    }
+                    
+
                     if (DropEffect == DropEffect.Move && Utilities.IsSameComObject(Project, SourceHierarchy)) {
                         // we are doing a move, we need to remove the old item, and add the new.
+                        // This also allows us to have better behavior if the user is selectively answering
+                        // no to files within the hierarchy.  We can do the rename of the individual items
+                        // which the user opts to move and not touch the ones they don't.  With a cross
+                        // hierarchy move if the user answers no to any of the items none of the items
+                        // are removed from the source hierarchy.
                         var fileNode = Project.FindNodeByFullPath(SourceMoniker);
                         Debug.Assert(fileNode is FileNode);
+
+                        Project.ItemsDraggedOrCutOrCopied.Remove(fileNode); // we don't need to remove the file after Paste                        
+
+                        if (File.Exists(newPath)) {
+                            // we checked before starting the copy, but somehow a file has snuck in.  Could be a race,
+                            // or the user could have cut and pasted 2 files from different folders into the same folder.
+                            bool shouldOverwrite;
+                            if (overwrite == null) {
+                                OverwriteFileDialog dialog;
+                                if (!PromptOverwriteFile(Path.GetFileName(newPath), out dialog)) {
+                                    // user cancelled
+                                    fileNode.ExpandItem(EXPANDFLAGS.EXPF_UnCutHighlightItem);
+                                    throw new CancelPasteException();
+                                }
+
+                                if (dialog.AllItems) {
+                                    overwrite = dialog.ShouldOverwrite;
+                                }
+
+                                shouldOverwrite = dialog.ShouldOverwrite;
+                            } else {
+                                shouldOverwrite = overwrite.Value;
+                            }
+
+                            if (!shouldOverwrite) {
+                                fileNode.ExpandItem(EXPANDFLAGS.EXPF_UnCutHighlightItem);
+                                return;
+                            }
+
+                            var existingNode = Project.FindNodeByFullPath(newPath);
+                            if (existingNode != null) {
+                                existingNode.Remove(true);
+                            } else {
+                                File.Delete(newPath);
+                            }
+                        }
 
                         FileNode file = fileNode as FileNode;
                         file.RenameInStorage(fileNode.Url, newPath);
                         file.RenameFileNode(fileNode.Url, newPath);
 
                         Project.Tracker.OnItemRenamed(SourceMoniker, newPath, VSRENAMEFILEFLAGS.VSRENAMEFILEFLAGS_NoFlags);
-                        Project.ItemsDraggedOrCutOrCopied.Remove(fileNode); // we don't need to remove the file after Paste
                     } else {
                         // we are copying and adding a new file node
                         File.Copy(SourceMoniker, newPath, true);
+
+                        // best effort to reset the ReadOnly attribute
+                        try {
+                            File.SetAttributes(newPath, File.GetAttributes(newPath) & ~FileAttributes.ReadOnly);
+                        } catch (ArgumentException) {
+                        } catch (UnauthorizedAccessException) {
+                        } catch (IOException) {
+                        }
+
                         var existing = Project.FindNodeByFullPath(newPath);
                         if (existing == null) {
                             var fileNode = Project.CreateFileNode(newPath);
@@ -1095,21 +1330,33 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                                 Project.AddChild(fileNode);
                             } else {
                                 var targetFolder = Project.CreateFolderNodes(TargetFolder);
-                                if (targetFolder.IsNonMemberItem) {
+
+                                //If a race occurrs simply treat the source as a non-included item
+                                bool wasMemberItem = false;
+                                var sourceItem = Project.FindNodeByFullPath(SourceMoniker);
+                                if (sourceItem != null) {
+                                    wasMemberItem = !sourceItem.IsNonMemberItem;
+                                }
+
+                                if (wasMemberItem && targetFolder.IsNonMemberItem) {
                                     // dropping/pasting folder into non-member folder, non member folder
                                     // should get included into the project.
                                     ErrorHandler.ThrowOnFailure(targetFolder.IncludeInProject(false));
                                 }
 
                                 targetFolder.AddChild(fileNode);
+                                if (!wasMemberItem) {
+                                    // added child by default is included,
+                                    //   non-member copies are not added to the project
+                                    ErrorHandler.ThrowOnFailure(fileNode.ExcludeFromProject());
+                                }
                             }
+                            Project.tracker.OnItemAdded(fileNode.Url, VSADDFILEFLAGS.VSADDFILEFLAGS_NoFlags);
                         } else if (existing.IsNonMemberItem) {
                             // replacing item that already existed, just include it in the project.
                             existing.IncludeInProject(false);
                         }
                     }
-
-                    Project.SetProjectFileDirty(true);
                 }
             }
 
@@ -1118,7 +1365,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     : base(project, targetFolder, dropEffect, sourceMoniker, newFileName, sourceHierarchy) {
                 }
 
-                public override void DoAddition() {
+                public override void DoAddition(ref bool? overwrite) {
                     if (DropEffect == DropEffect.Move) {
                         // File.Move won't overwrite, do it now.
                         File.Delete(Path.Combine(TargetFolder, Path.GetFileName(NewFileName)));
@@ -1130,7 +1377,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                             existingNode.Remove(true);
                         }
                     }
-                    base.DoAddition();
+                    base.DoAddition(ref overwrite);
                 }
             }
         }
@@ -1180,7 +1427,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                 _copyCutState = CopyCutState.Cut;
 
                 // Add our cut item(s) to the clipboard
-                ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleSetClipboard(dataObject));
+                Site.GetClipboardService().SetClipboard(dataObject);
 
                 // Inform VS (UiHierarchyWindow) of the cut
                 IVsUIHierWinClipboardHelper clipboardHelper = (IVsUIHierWinClipboardHelper)GetService(typeof(SVsUIHierWinClipboardHelper));
@@ -1207,7 +1454,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                 _copyCutState = CopyCutState.Copied;
 
                 // Add our copy item(s) to the clipboard
-                ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleSetClipboard(dataObject));
+                Site.GetClipboardService().SetClipboard(dataObject);
 
                 // Inform VS (UiHierarchyWindow) of the copy
                 IVsUIHierWinClipboardHelper clipboardHelper = (IVsUIHierWinClipboardHelper)GetService(typeof(SVsUIHierWinClipboardHelper));
@@ -1237,8 +1484,7 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
 
             try {
                 //Get dataobject from clipboard
-                IOleDataObject dataObject;
-                ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleGetClipboard(out dataObject));
+                IOleDataObject dataObject = Site.GetClipboardService().GetClipboard();
                 if (dataObject == null) {
                     return VSConstants.E_UNEXPECTED;
                 }
@@ -1283,9 +1529,8 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
         /// </summary>
         /// <returns></returns>
         protected internal bool AllowPasteCommand() {
-            IOleDataObject dataObject = null;
             try {
-                ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleGetClipboard(out dataObject));
+                IOleDataObject dataObject = Site.GetClipboardService().GetClipboard();
                 if (dataObject == null) {
                     return false;
                 }
@@ -1410,9 +1655,9 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                             waitDialog.EndWaitDialog(ref cancelled);
                             waitResult = VSConstants.E_FAIL; // don't end twice
 
-                            VsShellUtilities.ShowMessageBox(
+                            Utilities.ShowMessageBox(
                                 Site,
-                                String.Format("Cannot add folder '{0}' as a child or decedent of self.", Path.GetFileName(CommonUtils.TrimEndSeparator(droppedFile))),
+                                SR.GetString(SR.CannotAddAsDescendantOfSelf, CommonUtils.GetFileOrDirectoryName(droppedFile)),
                                 null,
                                 OLEMSGICON.OLEMSGICON_CRITICAL,
                                 OLEMSGBUTTON.OLEMSGBUTTON_OK,
@@ -1459,7 +1704,6 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
                     this.tracker.OnItemAdded(item.Value.Url, VSADDFILEFLAGS.VSADDFILEFLAGS_NoFlags);
                 }
                 OnInvalidateItems(node);
-                SetProjectFileDirty(true);
             }
         }
 
@@ -1591,8 +1835,8 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
         /// Empties all the data structures added to the clipboard and flushes the clipboard.
         /// </summary>
         private void CleanAndFlushClipboard() {
-            IOleDataObject oleDataObject = null;
-            ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleGetClipboard(out oleDataObject));
+            var clippy = Site.GetClipboardService();
+            IOleDataObject oleDataObject = clippy.GetClipboard();
             if (oleDataObject == null) {
                 return;
             }
@@ -1601,14 +1845,14 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             string sourceProjectPath = DragDropHelper.GetSourceProjectPath(oleDataObject);
 
             if (!String.IsNullOrEmpty(sourceProjectPath) && CommonUtils.IsSamePath(sourceProjectPath, this.GetMkDocument())) {
-                ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.OleFlushClipboard());
-                int clipboardOpened = 0;
+                clippy.FlushClipboard();
+                bool opened = false;
                 try {
-                    ErrorHandler.ThrowOnFailure(clipboardOpened = UnsafeNativeMethods.OpenClipboard(IntPtr.Zero));
-                    ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.EmptyClipboard());
+                    opened = clippy.OpenClipboard();
+                    clippy.EmptyClipboard();
                 } finally {
-                    if (clipboardOpened == 1) {
-                        ErrorHandler.ThrowOnFailure(UnsafeNativeMethods.CloseClipboard());
+                    if (opened) {
+                        clippy.CloseClipboard();
                     }
                 }
             }
@@ -1660,6 +1904,6 @@ folder you are copying, do you want to replace the existing files?", Path.GetFil
             _copyCutState = CopyCutState.None;
         }
 
-        
+
     }
 }

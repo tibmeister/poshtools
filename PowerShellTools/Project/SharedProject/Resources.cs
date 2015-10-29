@@ -18,8 +18,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Resources;
 using System.Threading;
+using Microsoft.VisualStudioTools.Project;
 
-namespace Microsoft.VisualStudioTools.Project {
+namespace PowerShellTools.Project.SharedProject {
     /// <summary>
     /// Specifies the localizable display name for a property, event, or public void method which takes no arguments. 
     /// First looks up the name in local string resources than falls back to MPFProj resources.

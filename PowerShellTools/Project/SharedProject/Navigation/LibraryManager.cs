@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Collections.Generic;
@@ -36,13 +38,13 @@ namespace Microsoft.VisualStudioTools.Navigation {
     internal abstract partial class LibraryManager : IDisposable, IVsRunningDocTableEvents {
         private readonly CommonPackage/*!*/ _package;
         private readonly Dictionary<uint, TextLineEventListener> _documents;
-        private readonly Dictionary<IVsHierarchy, HierarchyInfo> _hierarchies = new Dictionary<IVsHierarchy,HierarchyInfo>();
+        private readonly Dictionary<IVsHierarchy, HierarchyInfo> _hierarchies = new Dictionary<IVsHierarchy, HierarchyInfo>();
         private readonly Dictionary<ModuleId, LibraryNode> _files;
         private readonly Library _library;
         private readonly IVsEditorAdaptersFactoryService _adapterFactory;
         private uint _objectManagerCookie;
         private uint _runningDocTableCookie;
-        
+
         public LibraryManager(CommonPackage/*!*/ package) {
             Contract.Assert(package != null);
             _package = package;
@@ -101,7 +103,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
             if ((null == hierarchy) || _hierarchies.ContainsKey(hierarchy)) {
                 return;
             }
-            
+
             RegisterLibrary();
             var commonProject = hierarchy.GetProject().GetCommonProject();
             HierarchyListener listener = new HierarchyListener(hierarchy, this);
@@ -204,7 +206,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
                     fileNode,
                     System.IO.Path.GetFileName(task.FileName),
                     task.FileName,
-                    LibraryNodeType.Classes
+                    LibraryNodeType.Package | LibraryNodeType.Classes
                 );
 
                 // TODO: Creating the module tree should be done lazily as needed
@@ -240,7 +242,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
                 return;
             }
 
-            foreach (IScopeNode subItem in scope.NestedScopes) {                
+            foreach (IScopeNode subItem in scope.NestedScopes) {
                 LibraryNode newNode = CreateLibraryNode(current, subItem, namePrefix, moduleId.Hierarchy, moduleId.ItemID);
                 string newNamePrefix = namePrefix;
 
@@ -254,7 +256,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
             }
         }
         #endregion
-        
+
         #region Hierarchy Events
 
         private void OnNewFile(object sender, HierarchyEventArgs args) {
@@ -296,6 +298,10 @@ namespace Microsoft.VisualStudioTools.Navigation {
             lock (_files) {
                 if (_files.TryGetValue(id, out node)) {
                     _files.Remove(id);
+                    HierarchyInfo parent;
+                    if (_hierarchies.TryGetValue(hierarchy, out parent)) {
+                        parent.ProjectLibraryNode.RemoveNode(node);
+                    }
                 }
             }
             if (null != node) {
@@ -398,7 +404,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
                     // Check the file to see if a listener is required.
                     if (_package.IsRecognizedFile(documentMoniker)) {
                         return VSConstants.S_OK;
-                    }                    
+                    }
 
                     // Create the module id for this document.
                     ModuleId docId = new ModuleId(hierarchy, itemId);

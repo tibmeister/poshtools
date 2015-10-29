@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Collections.Generic;
@@ -167,7 +169,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
 
         public override uint CategoryField(LIB_CATEGORY category) {
             uint fieldValue = 0;
-            
+
             switch (category) {
                 case (LIB_CATEGORY)_LIB_CATEGORY2.LC_PHYSICALCONTAINERTYPE:
                     fieldValue = (uint)_LIBCAT_PHYSICALCONTAINERTYPE.LCPT_PROJECT;
@@ -226,7 +228,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
         }
 
         public virtual void FillDescription(_VSOBJDESCOPTIONS flags, IVsObjectBrowserDescription3 description) {
-            description.ClearDescriptionText();            
+            description.ClearDescriptionText();
             description.AddDescriptionText3(_name, VSOBDESCRIPTIONSECTION.OBDS_NAME, null);
         }
 
@@ -254,7 +256,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
 
         public virtual string Name {
             get {
-                return _name; 
+                return _name;
             }
         }
 
@@ -291,7 +293,7 @@ namespace Microsoft.VisualStudioTools.Navigation {
                 return _fullname;
             }
         }
-        
+
         public CommandID ContextMenuID {
             get {
                 return _contextMenuID;

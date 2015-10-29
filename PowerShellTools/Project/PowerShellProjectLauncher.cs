@@ -117,6 +117,11 @@ namespace PowerShellTools.Project
             return VSConstants.S_OK;
         }
 
+        public int LaunchFile(string file, bool debug)
+        {
+            return VSConstants.S_OK;
+        }
+
         public int LaunchSelection(string selection)
         {
             if (!_dependenciesResolved) return VSConstants.E_NOTIMPL;
