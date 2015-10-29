@@ -191,7 +191,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     .AddParameter("ExecutionPolicy", policy)
                     .AddParameter("Scope", scope)
                     .AddParameter("Force");
-                ps.Invoke();
+
+                try
+                {
+                    //If a more restritive scope causes this to fail, this can throw
+                    //an exception and cause the host to crash. This causes it to be
+                    //recreated over and over again. This leads to performance issues in VS.
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    ServiceCommon.Log("Failed to set execution policy. {0}", ex.Message);
+                }
             }
         }
 
