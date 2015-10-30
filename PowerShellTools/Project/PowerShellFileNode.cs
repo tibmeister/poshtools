@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudioTools.Project;
+using PowerShellTools.Project.Images;
 
 namespace PowerShellTools.Project
 {
@@ -24,6 +27,27 @@ namespace PowerShellTools.Project
             return new PowerShellFileNodeProperties(this);
         }
 
+#if DEV14_OR_LATER
+        protected override bool SupportsIconMonikers { get { return true; } }
+
+        protected override ImageMoniker CodeFileIconMoniker
+        {
+            get
+            {
+                if (FileName.EndsWith(PowerShellConstants.PSM1File))
+                {
+                    return PowerShellMonikers.ModuleIconImageMoniker;
+                }
+
+                if (FileName.EndsWith(PowerShellConstants.PSD1File))
+                {
+                    return PowerShellMonikers.DataIconImageMoniker;
+                }
+
+                return PowerShellMonikers.ScriptIconImageMoniker;
+            }
+        }
+#else
         public override int ImageIndex
         {
             get
@@ -59,6 +83,7 @@ namespace PowerShellTools.Project
                 return base.ImageIndex;
             }
         }
+#endif
 
         internal override int QueryStatusOnNode(Guid guidCmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
         {

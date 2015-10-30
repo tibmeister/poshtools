@@ -397,6 +397,7 @@
     <Compile Include="PackageProperties.cs" />
     <Compile Include="PowerShellConstants.cs" />
     <Compile Include="Classification\PowerShellEditorFactory.cs" />
+    <Compile Include="Project\Images\PowerShellMonikers.cs" />
     <Compile Include="Project\PowerShellCodeDomProvider.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
@@ -751,9 +752,16 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <Resource Include="Project\Images\DataIcon.png" />
+    <Resource Include="Project\Images\ModuleIcon.png" />
+    <Content Include="Project\Images\PoshTools.imagemanifest">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Project\SharedProject\ProcessOutput.cs.rej" />
     <None Include="Resources\WarningIcon.ico" />
     <None Include="Resources\ErrorStatus.png" />
+    <Resource Include="Project\Images\ProjectIcon.png" />
+    <Resource Include="Project\Images\ScriptIcon.png" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
