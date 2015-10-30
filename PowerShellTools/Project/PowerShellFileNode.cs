@@ -44,6 +44,11 @@ namespace PowerShellTools.Project
                     return PowerShellMonikers.DataIconImageMoniker;
                 }
 
+                if (FileName.EndsWith(PowerShellConstants.Test))
+                {
+                    return PowerShellMonikers.TestIconImageMoniker;
+                }
+
                 return PowerShellMonikers.ScriptIconImageMoniker;
             }
         }

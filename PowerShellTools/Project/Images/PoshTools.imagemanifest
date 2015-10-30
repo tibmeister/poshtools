@@ -9,6 +9,7 @@
     <ID Name="ScriptIcon" Value="1" />
     <ID Name="DataIcon" Value="2" />
     <ID Name="ModuleIcon" Value="3" />
+    <ID Name="TestIcon" Value="4" />
   </Symbols>
   <Images>
     <Image Guid="$(ProjectGuid)" ID="$(ProjectIcon)">
@@ -28,6 +29,11 @@
     </Image>
     <Image Guid="$(ProjectGuid)" ID="$(ModuleIcon)">
       <Source Uri="$(Resources)/Project/Images/ModuleIcon.png" >
+        <Size Value="16" />
+      </Source>
+    </Image>
+    <Image Guid="$(ProjectGuid)" ID="$(TestIcon)">
+      <Source Uri="$(Resources)/Project/Images/TestIcon.png" >
         <Size Value="16" />
       </Source>
     </Image>

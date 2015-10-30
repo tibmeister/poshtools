@@ -11,6 +11,7 @@ namespace PowerShellTools.Project.Images
         private const int ScriptIcon = 1;
         private const int DataIcon = 2;
         private const int ModuleIcon = 3;
+        private const int TestIcon = 4;
 
         public static ImageMoniker ProjectIconImageMoniker
         {
@@ -41,6 +42,14 @@ namespace PowerShellTools.Project.Images
             get
             {
                 return new ImageMoniker { Guid = ManifestGuid, Id = ModuleIcon };
+            }
+        }
+
+        public static ImageMoniker TestIconImageMoniker
+        {
+            get
+            {
+                return new ImageMoniker { Guid = ManifestGuid, Id = TestIcon };
             }
         }
     }
