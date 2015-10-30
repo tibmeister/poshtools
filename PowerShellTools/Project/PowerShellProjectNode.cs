@@ -105,7 +105,7 @@ namespace PowerShellTools.Project
 
         public override CommonFileNode CreateNonCodeFileNode(ProjectElement item)
         {
-            var node = new PowerShellFileNode(this, item);
+            var node = new PowerShellNonCodeFileNode(this, item);
             //node.OleServiceProvider.AddService(typeof(SVSMDCodeDomProvider), CreateServices, false);
 
             return node;

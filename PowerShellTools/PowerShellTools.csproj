@@ -401,6 +401,7 @@
     <Compile Include="Project\PowerShellCodeDomProvider.cs" />
     <Compile Include="Project\LocDisplayNameAttribute.cs" />
     <Compile Include="Project\PowerShellConfigProvider.cs" />
+    <Compile Include="Project\PowerShellNonCodeFileNode.cs" />
     <Compile Include="Project\PropertyPages\ComponentsPropertyPage.cs" />
     <Compile Include="Project\PropertyPages\ComponentsPropertyPageControl.cs">
       <SubType>UserControl</SubType>
@@ -648,6 +649,8 @@
     <Compile Include="Project\Utils\DropDownListPropertyEditor.cs" />
     <Compile Include="Project\Utils\FileListTypeConverter.cs" />
     <Compile Include="Project\Utils\VersionConverter.cs" />
+    <Compile Include="Project\WpfEventBindingProvider.cs" />
+    <Compile Include="Project\XamlDesignerSupport.cs" />
     <Compile Include="ProvideDiffSupportedContentTypeAttribute.cs" />
     <Compile Include="RegistrationAttributes.cs">
       <SubType>Code</SubType>
