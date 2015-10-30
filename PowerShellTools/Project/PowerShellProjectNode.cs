@@ -111,7 +111,10 @@ namespace PowerShellTools.Project
             return node;
         }
 
-        internal override string IssueTrackerUrl { get;  }
+        internal override string IssueTrackerUrl
+        {
+            get { return "https://github.com/adamdriscoll/poshtools/issues"; }
+        }
 
 #if DEV14_OR_LATER
         protected override bool SupportsIconMonikers
@@ -145,15 +148,14 @@ namespace PowerShellTools.Project
         /// <summary>
         /// Creates the services exposed by this project.
         /// </summary>
-        protected object CreateServices(Type serviceType)
+        protected new object CreateServices(Type serviceType)
         {
-            object service = null;
             if (typeof(SVSMDCodeDomProvider) == serviceType)
             {
-                service = new PowerShellCodeDomProvider();
+                return new PowerShellCodeDomProvider();
             }
 
-            return service;
+            return base.CreateServices(serviceType);
         }
 
         public override bool IsCodeFile(string fileName)
