@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <DefaultName>WpfWindow.xaml</DefaultName>
+    <Name>PowerShell WPF Window</Name>
+    <ProjectType>PowerShell</ProjectType>
+    <Description>WPF Window for PowreShell.</Description>
+    <TemplateID>PowerShellTools.PowerShell.PowerShellWpfWindow</TemplateID>
+    <TemplateGroupID>PowerShellTools.PowerShell</TemplateGroupID>
+    <AppliesTo>PowerShell | DeploymentProject | Web | DNX</AppliesTo>
+    <SortOrder>150</SortOrder>
+    <Icon>PowerShellScript.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem SubType="Designer" TargetFileName="$fileinputname$.xaml" ReplaceParameters="true">WpfWindow.xaml</ProjectItem>
+    <ProjectItem SubType="Code" TargetFileName="$fileinputname$.xaml/$fileinputname$.xaml.ps1" ReplaceParameters="true">WpfWindow.xaml.ps1</ProjectItem>
+  </TemplateContent>
+</VSTemplate>
