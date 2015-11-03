@@ -426,4 +426,10 @@ Would you like to download now?</value>
   <data name="Warning_MandatoryValueNotSet_1arg" xml:space="preserve">
     <value>Parameter '{0}' is Mandatory.</value>
   </data>
+  <data name="GetHelp_HelpNotFound" xml:space="preserve">
+    <value>Online Help not found for {0}. </value>
+  </data>
+  <data name="GetHelp_Searching" xml:space="preserve">
+    <value>Searching Online Help for {0}...</value>
+  </data>
 </root>

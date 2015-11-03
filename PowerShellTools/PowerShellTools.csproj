@@ -677,6 +677,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ItemTemplates\PowerShellTest.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Manifest\source.extension.vsixmanifest" />
     <Content Include="poshtools.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -702,6 +706,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Resource Include="Templates\Files\PowerShellTest.ico" />
+    <Content Include="Templates\Files\PowerShellTest.vstemplate" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -783,6 +789,7 @@
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
+    <None Include="Templates\Files\Script.Tests.ps1" />
     <None Include="Templates\Projects\Module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
     <None Include="Templates\Projects\Module.tests.ps1" />

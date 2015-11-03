@@ -40,8 +40,11 @@ namespace PowerShellTools.Classification
             {
                 AddSpansForStringToken(stringExpandableToken, spanStart, classificationInfo);
             }
-
-            ToClassificationInfo(token, token.Extent.StartOffset + spanStart, token.Extent.EndOffset - token.Extent.StartOffset, classificationInfo);
+            else
+            {
+                ToClassificationInfo(token, token.Extent.StartOffset + spanStart, token.Extent.EndOffset - token.Extent.StartOffset, classificationInfo);
+            }
+            
         }
 
         private IClassificationType GetClassificationType(Token token)
@@ -62,9 +65,16 @@ namespace PowerShellTools.Classification
         private void AddSpansForStringToken(StringExpandableToken stringToken, int spanStart, List<ClassificationInfo> classificationInfo)
         {
             var startOffset = stringToken.Extent.StartOffset;
+
+            if (stringToken.NestedTokens.Any())
+            {
+                var endStartOffset = stringToken.NestedTokens.First().Extent.StartOffset;
+                ToClassificationInfo(stringToken, startOffset + spanStart, endStartOffset, classificationInfo);
+            }
+
             foreach (var current in stringToken.NestedTokens)
             {
-                ToClassificationInfo(stringToken, startOffset + spanStart, current.Extent.StartOffset - startOffset, classificationInfo);
+                ToClassificationInfo(current, startOffset + spanStart, current.Extent.StartOffset - startOffset, classificationInfo);
                 AddSpanForToken(current, spanStart, classificationInfo);
                 startOffset = current.Extent.EndOffset;
             }
