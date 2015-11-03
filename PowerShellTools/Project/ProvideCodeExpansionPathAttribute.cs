@@ -18,7 +18,7 @@ using System;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 
-namespace Microsoft.VisualStudioTools
+namespace PowerShellTools.Project
 {
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudioTools
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     // Disable the "IdentifiersShouldNotHaveIncorrectSuffix" warning.
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711")]
-    sealed class ProvideCodeExpansionPathAttribute : RegistrationAttribute
+    public sealed class ProvideCodeExpansionPathAttribute : RegistrationAttribute
     {
         private readonly string _languageStringId;
         private readonly string _description;

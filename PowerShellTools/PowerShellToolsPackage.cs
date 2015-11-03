@@ -40,6 +40,7 @@ using PowerShellTools.Common.Logging;
 using PowerShellTools.DebugEngine.Remote;
 using PowerShellTools.Explorer;
 using PowerShellTools.Common.ServiceManagement.ExplorerContract;
+using PowerShellTools.Project;
 
 namespace PowerShellTools
 {

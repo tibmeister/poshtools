@@ -22,7 +22,6 @@ namespace PowerShellTools.Snippets
     [TextViewRole(PredefinedTextViewRoles.Editable)]
     public class SnippetHandlerProvider : IVsTextViewCreationListener
     {
-       // internal const string LanguageServiceGuidStr = "AD4D401C-11EA-431F-A412-FAB167156206";
 
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
@@ -169,7 +168,7 @@ namespace PowerShellTools.Snippets
             if (pguidCmdGroup != VSConstants.VSStd2K || cCmds <= 0)
                 return _mNextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
 
-            if (prgCmds[0].cmdID != (uint) VSConstants.VSStd2KCmdID.INSERTSNIPPET)
+            if (prgCmds[0].cmdID != (uint) VSConstants.VSStd2KCmdID.INSERTSNIPPET && (prgCmds[0].cmdID != (uint)VSConstants.VSStd2KCmdID.SURROUNDWITH || _textView.Selection.IsEmpty))
                 return _mNextCommandHandler.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
 
             prgCmds[0].cmdf = (int)Constants.MSOCMDF_ENABLED | (int)Constants.MSOCMDF_SUPPORTED;
@@ -194,167 +193,7 @@ namespace PowerShellTools.Snippets
 
         public int FormatSpan(IVsTextLines pBuffer, TextSpan[] ts)
         {
-            IXMLDOMNode codeNode, snippetTypes, declarations, imports;
-
-            int hr;
-            if (ErrorHandler.Failed(hr = _session.GetSnippetNode("CodeSnippet:Code", out codeNode)))
-            {
-                return hr;
-            }
-
-            if (ErrorHandler.Failed(hr = _session.GetHeaderNode("CodeSnippet:SnippetTypes", out snippetTypes)))
-            {
-                return hr;
-            }
-
-            var declList = new List<string>();
-            if (ErrorHandler.Succeeded(hr = _session.GetSnippetNode("CodeSnippet:Declarations", out declarations))
-                && declarations != null)
-            {
-                foreach (IXMLDOMNode declType in declarations.childNodes)
-                {
-                    var id = declType.selectSingleNode("./CodeSnippet:ID");
-                    if (id != null)
-                    {
-                        declList.Add(id.text);
-                    }
-                }
-            }
-
-            var importList = new List<string>();
-            if (ErrorHandler.Succeeded(hr = _session.GetSnippetNode("CodeSnippet:Imports", out imports))
-                && imports != null)
-            {
-                foreach (IXMLDOMNode import in imports.childNodes)
-                {
-                    var id = import.selectSingleNode("./CodeSnippet:Namespace");
-                    if (id != null)
-                    {
-                        importList.Add(id.text);
-                    }
-                }
-            }
-
-            bool surroundsWith = false, surroundsWithStatement = false;
-            foreach (IXMLDOMNode snippetType in snippetTypes.childNodes)
-            {
-                if (snippetType.nodeName == "SnippetType")
-                {
-                    if (snippetType.text == SurroundsWith)
-                    {
-                        surroundsWith = true;
-                    }
-                    else if (snippetType.text == SurroundsWithStatement)
-                    {
-                        surroundsWithStatement = true;
-                    }
-                }
-            }
-
-            // get the indentation of where we're inserting the code...
-            string baseIndentation = GetBaseIndentation(ts);
-
-            TextSpan? endSpan = null;
-            using (var edit = _textView.TextBuffer.CreateEdit())
-            {
-                if (surroundsWith || surroundsWithStatement)
-                {
-                    // this is super annoyning...  Most languages can do a surround with and $selected$ can be
-                    // an empty string and everything's the same.  But in Python we can't just have something like
-                    // "while True: " without a pass statement.  So if we start off with an empty selection we
-                    // need to insert a pass statement.  This is the purpose of the "SurroundsWithStatement"
-                    // snippet type.
-                    //
-                    // But, to make things even more complicated, we don't have a good indication of what's the 
-                    // template text vs. what's the selected text.  We do have access to the original template,
-                    // but all of the values have been replaced with their default values when we get called
-                    // here.  So we need to go back and re-apply the template, except for the $selected$ part.
-                    //
-                    // Also, the text has \n, but the inserted text has been replaced with the appropriate newline
-                    // character for the buffer.
-                    var templateText = codeNode.text.Replace("\n", _textView.Options.GetNewLineCharacter());
-                    foreach (var decl in declList)
-                    {
-                        string defaultValue;
-                        if (ErrorHandler.Succeeded(_session.GetFieldValue(decl, out defaultValue)))
-                        {
-                            templateText = templateText.Replace("$" + decl + "$", defaultValue);
-                        }
-                    }
-                    templateText = templateText.Replace("$end$", "");
-
-                    // we can finally figure out where the selected text began witin the original template...
-                    int selectedIndex = templateText.IndexOf("$selected$");
-                    if (selectedIndex != -1)
-                    {
-                        var selection = _textView.Selection;
-
-                        // now we need to get the indentation of the $selected$ element within the template,
-                        // as we'll need to indent the selected code to that level.
-                        string indentation = GetTemplateSelectionIndentation(templateText, selectedIndex);
-
-                        var start = _selectionStart.GetPosition(_textView.TextBuffer.CurrentSnapshot);
-                        var end = _selectionEnd.GetPosition(_textView.TextBuffer.CurrentSnapshot);
-                        if (end < start)
-                        {
-                            // we didn't actually have a selction, and our negative tracking pushed us
-                            // back to the start of the buffer...
-                            end = start;
-                        }
-                        var selectedSpan = Span.FromBounds(start, end);
-
-                        if (surroundsWithStatement &&
-                            String.IsNullOrWhiteSpace(_textView.TextBuffer.CurrentSnapshot.GetText(selectedSpan)))
-                        {
-                            // we require a statement here and the user hasn't selected any code to surround,
-                            // so we insert a pass statement (and we'll select it after the completion is done)
-                            int startPosition;
-                            pBuffer.GetPositionOfLineIndex(ts[0].iStartLine, ts[0].iStartIndex, out startPosition);
-                            edit.Replace(new Span(startPosition + selectedIndex, end - start), "pass");
-
-                            // Surround With can be invoked with no selection, but on a line with some text.
-                            // In that case we need to inject an extra new line.
-                            var endLine = _textView.TextBuffer.CurrentSnapshot.GetLineFromPosition(end);
-                            var endText = endLine.GetText().Substring(end - endLine.Start);
-                            if (!String.IsNullOrWhiteSpace(endText))
-                            {
-                                edit.Insert(end, _textView.Options.GetNewLineCharacter());
-                            }
-
-                            // we want to leave the pass statement selected so the user can just
-                            // continue typing over it...
-                            var startLine = _textView.TextBuffer.CurrentSnapshot.GetLineFromPosition(startPosition + selectedIndex);
-                            _selectEndSpan = true;
-                            endSpan = new TextSpan()
-                            {
-                                iStartLine = startLine.LineNumber,
-                                iEndLine = startLine.LineNumber,
-                                iStartIndex = baseIndentation.Length + indentation.Length,
-                                iEndIndex = baseIndentation.Length + indentation.Length + 4,
-                            };
-                        }
-
-                        IndentSpan(
-                            edit,
-                            indentation,
-                            _textView.TextBuffer.CurrentSnapshot.GetLineFromPosition(start).LineNumber + 1, // 1st line is already indented
-                            _textView.TextBuffer.CurrentSnapshot.GetLineFromPosition(end).LineNumber
-                        );
-                    }
-                }
-
-                // we now need to update any code which was not selected  that we just inserted.
-                IndentSpan(edit, baseIndentation, ts[0].iStartLine + 1, ts[0].iEndLine);
-
-                edit.Apply();
-            }
-
-            if (endSpan != null)
-            {
-                _session.SetEndSpan(endSpan.Value);
-            }
-
-            return hr;
+            return VSConstants.S_OK;
         }
 
         private static string GetTemplateSelectionIndentation(string templateText, int selectedIndex)

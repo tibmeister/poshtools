@@ -18,7 +18,7 @@ using System;
 using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 
-namespace Microsoft.VisualStudioTools {
+namespace PowerShellTools.Project {
 
     /// <summary>
     /// This attribute registers code snippets for a package.  The attributes on a 
@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudioTools {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     // Disable the "IdentifiersShouldNotHaveIncorrectSuffix" warning.
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711")]
-    sealed class ProvideCodeExpansionsAttribute : RegistrationAttribute {
+    public sealed class ProvideCodeExpansionsAttribute : RegistrationAttribute {
         private readonly Guid _languageGuid;
         private readonly bool _showRoots;
         private readonly short _displayName;
