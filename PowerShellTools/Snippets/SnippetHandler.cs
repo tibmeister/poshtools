@@ -358,57 +358,7 @@ namespace PowerShellTools.Snippets
             }
             return _session.EndCurrentExpansion(leaveCaret ? 1 : 0);
         }
-
-
-        private bool InsertAnyExpansion(string shortcut, string title, string path)
-        {
-            //first get the location of the caret, and set up a TextSpan 
-            int endColumn, startLine;
-            //get the column number from  the IVsTextView, not the ITextView
-            _view.GetCaretPos(out startLine, out endColumn);
-
-            var addSpan = new TextSpan();
-            addSpan.iStartIndex = endColumn;
-            addSpan.iEndIndex = endColumn;
-            addSpan.iStartLine = startLine;
-            addSpan.iEndLine = startLine;
-
-            if (shortcut != null) //get the expansion from the shortcut
-            {
-                //reset the TextSpan to the width of the shortcut,  
-                //because we're going to replace the shortcut with the expansion
-                addSpan.iStartIndex = addSpan.iEndIndex - shortcut.Length;
-
-                _mExManager.GetExpansionByShortcut(
-                    this,
-                    new Guid(GuidList.PowerShellLanguage),
-                    shortcut,
-                    _view,
-                    new[] { addSpan },
-                    0,
-                    out path,
-                    out title);
-            }
-
-            if (title == null || path == null) return false;
-
-            IVsTextLines textLines;
-            _view.GetBuffer(out textLines);
-            var bufferExpansion = (IVsExpansion)textLines;
-
-            if (bufferExpansion == null) return false;
-
-            var hr = bufferExpansion.InsertNamedExpansion(
-                title,
-                path,
-                addSpan,
-                this,
-                new Guid(GuidList.PowerShellLanguage),
-                0,
-                out _session);
-
-            return VSConstants.S_OK == hr;
-        }
+       
     }
 
     
