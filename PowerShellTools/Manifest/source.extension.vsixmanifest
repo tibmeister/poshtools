@@ -34,5 +34,6 @@
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService.x86" Path="|PowerShellTools.HostService.x86|" AssemblyName="|PowerShellTools.HostService.x86;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" Path="|PowerShellTools.Common|" AssemblyName="|PowerShellTools.Common;AssemblyName|" d:ProjectName="%CurrentProject%.Common" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="%CurrentProject%.HostService.Console" Path="|PowerShell.HostService.Console|" AssemblyName="|PowerShell.HostService.Console;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="snippets.pkgdef" />
   </Assets>
 </PackageManifest>
