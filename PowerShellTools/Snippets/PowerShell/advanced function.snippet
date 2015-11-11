@@ -29,7 +29,7 @@
                 </Literal>
             </Declarations>
             <References />
-          <Code Language="PowerShell">
+          <Code Language="PowerShell" Delimiter="~">
                 <![CDATA[<#.Synopsis
 <!<SnippetShortDescription>!>
 .DESCRIPTION
@@ -39,18 +39,18 @@
 .EXAMPLE
 <!<SnippetAnotherExample>!>
 #>
-function $param1$
+function ~param1~
 {
     [CmdletBinding()]
     [OutputType([int])]
     param
     (
         # <!<SnippetParam1Help>!>
-        [Parameter(Mandatory=$$true, ValueFromPipelineByPropertyName=$$true,Position=0)]
-        $param2$,
+        [Parameter(Mandatory=$true, ValueFromPipelineByPropertyName=$true,Position=0)]
+        ~param2~,
 
         # <!<SnippetParam2Help>!>
-        [int]$param3$)
+        [int]~param3~)
 
         Begin
         {
@@ -59,7 +59,7 @@ function $param1$
 
         Process
         {
-          $end$
+          ~end~
         }
 
         End
