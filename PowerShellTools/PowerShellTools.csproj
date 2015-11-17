@@ -444,6 +444,7 @@
     <Compile Include="Project\PropertyPages\RequirementsPropertyPageControl.Designer.cs">
       <DependentUpon>RequirementsPropertyPageControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\ProvideCodeExpansionPathAttribute.cs" />
     <Compile Include="Project\PSBuildTask.cs" />
     <Compile Include="Project\ResourcesCategoryAttribute.cs" />
     <Compile Include="Project\ResourcesDescriptionAttribute.cs" />
@@ -621,6 +622,7 @@
     <Compile Include="Service\IExecutionEngine.cs" />
     <Compile Include="Service\PowerShellHostClientService.cs" />
     <Compile Include="Service\PowerShellService.cs" />
+    <Compile Include="Snippets\SnippetHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CredentialUI\Resources.resx">
@@ -685,6 +687,8 @@
     </Content>
     <Content Include="ItemTemplates\PowerShell Form.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="ItemTemplates\PowerShellTest.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <None Include="Manifest\source.extension.vsixmanifest" />
@@ -705,9 +709,16 @@
     <EmbeddedResource Include="Project\Resources\ImageList.bmp" />
     <EmbeddedResource Include="Project\Resources\CommonImageList.bmp" />
     <EmbeddedResource Include="Resources\PowerShellInteractiveWindow_16x.png" />
+    <Compile Include="Project\ProvideCodeExpansionsAttribute.cs" />
     <None Include="Resources\WarningIcon.ico" />
     <None Include="Resources\ErrorStatus.png" />
     <Content Include="Templates\Files\Form.vstemplate" />
+    <Content Include="Snippets\SnippetsIndex.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Resource Include="Templates\Files\PowerShellTest.ico" />
+    <Content Include="Templates\Files\PowerShellTest.vstemplate" />
     <Content Include="Templates\Files\ScriptDataFile.vstemplate" />
     <Content Include="Templates\Files\ScriptModule.vstemplate" />
     <Content Include="Templates\Files\Script.vstemplate" />
@@ -736,9 +747,62 @@
     </None>
     <None Include="Templates\Files\Form.designer.ps1" />
     <None Include="Templates\Files\Form.ps1" />
+    <Content Include="Snippets\PowerShell\advanced function.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\commentblock.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\dountil.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\dowhile.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\for.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\foreach.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\function.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\if.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\ifelse.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\switch.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\trycatchfinally.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\tryfinally.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\while.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
+    <None Include="Templates\Files\Script.Tests.ps1" />
     <None Include="Templates\Projects\Module.psd1" />
     <None Include="Templates\Projects\Module.psm1" />
     <None Include="Templates\Projects\Module.tests.ps1" />

@@ -167,22 +167,37 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
         private void SetExecutionPolicy(ExecutionPolicy policy, ExecutionPolicyScope scope)
         {
-            ExecutionPolicy currentPolicy = ExecutionPolicy.Undefined;
+            ExecutionPolicy machinePolicy = ExecutionPolicy.Undefined;
+            ExecutionPolicy userPolicy = ExecutionPolicy.Undefined;
 
             ServiceCommon.Log("Setting execution policy");
             using (PowerShell ps = PowerShell.Create())
             {
                 ps.Runspace = _runspace;
 
-                ps.AddCommand("Get-ExecutionPolicy");
+                ps.AddCommand("Get-ExecutionPolicy")
+                        .AddParameter("Scope", "MachinePolicy");
 
                 foreach (var result in ps.Invoke())
                 {
-                    currentPolicy = ((ExecutionPolicy)result.BaseObject);
+                    machinePolicy = ((ExecutionPolicy)result.BaseObject);
                     break;
                 }
 
-                if ((policy <= currentPolicy || currentPolicy == ExecutionPolicy.Bypass) && currentPolicy != ExecutionPolicy.Undefined) //Bypass is the absolute least restrictive, but as added in PS 2.0, and thus has a value of '4' instead of a value that corresponds to it's relative restrictiveness
+                ps.Commands.Clear();
+
+                ps.AddCommand("Get-ExecutionPolicy")
+                        .AddParameter("Scope", "UserPolicy");
+
+                foreach (var result in ps.Invoke())
+                {
+                    userPolicy = ((ExecutionPolicy)result.BaseObject);
+                    break;
+                }
+
+                ps.Commands.Clear();
+
+                if (machinePolicy != ExecutionPolicy.Undefined || userPolicy != ExecutionPolicy.Undefined)
                     return;
 
                 ps.Commands.Clear();
@@ -191,7 +206,18 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     .AddParameter("ExecutionPolicy", policy)
                     .AddParameter("Scope", scope)
                     .AddParameter("Force");
-                ps.Invoke();
+
+                try
+                {
+                    //If a more restritive scope causes this to fail, this can throw
+                    //an exception and cause the host to crash. This causes it to be
+                    //recreated over and over again. This leads to performance issues in VS.
+                    ps.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    ServiceCommon.Log("Failed to set execution policy. {0}", ex.Message);
+                }
             }
         }
 

@@ -52,6 +52,10 @@ namespace PowerShellTools.Project
                     {
                         index = ImageListIndex.DataFile;
                     }
+                    else if (FileName.EndsWith(PowerShellConstants.Test))
+                    {
+                        index = ImageListIndex.Test;
+                    }
 
                     return CommonProjectNode.ImageOffset + (int)index;
                 }
