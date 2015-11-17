@@ -687,6 +687,7 @@
     </Content>
     <Content Include="ItemTemplates\PowerShell Form.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ItemTemplates\PowerShellTest.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
