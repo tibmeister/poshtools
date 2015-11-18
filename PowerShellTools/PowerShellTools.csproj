@@ -463,6 +463,7 @@
     <Compile Include="Project\PropertyPages\RequirementsPropertyPageControl.Designer.cs">
       <DependentUpon>RequirementsPropertyPageControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Project\ProvideCodeExpansionPathAttribute.cs" />
     <Compile Include="Project\PSBuildTask.cs" />
     <Compile Include="Project\ResourcesCategoryAttribute.cs" />
     <Compile Include="Project\ResourcesDescriptionAttribute.cs" />
@@ -675,6 +676,7 @@
     <Compile Include="Service\IExecutionEngine.cs" />
     <Compile Include="Service\PowerShellHostClientService.cs" />
     <Compile Include="Service\PowerShellService.cs" />
+    <Compile Include="Snippets\SnippetHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CredentialUI\Resources.resx">
@@ -773,6 +775,13 @@
     <None Include="Resources\ErrorStatus.png" />
     <Resource Include="Project\Images\ProjectIcon.png" />
     <Resource Include="Project\Images\ScriptIcon.png" />
+    <Compile Include="Project\ProvideCodeExpansionsAttribute.cs" />
+    <None Include="Resources\WarningIcon.ico" />
+    <None Include="Resources\ErrorStatus.png" />
+    <Content Include="Snippets\SnippetsIndex.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Resource Include="Templates\Files\PowerShellTest.ico" />
     <Resource Include="Project\Images\TestIcon.png" />
     <Content Include="Templates\Files\PowerShellTest.vstemplate" />
@@ -803,6 +812,59 @@
     <None Include="PowerShellToolsProcessHostConsole.exe.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="Snippets\PowerShell\advanced function.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\commentblock.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\dountil.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\dowhile.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\for.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\foreach.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\function.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\if.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\ifelse.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\switch.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\trycatchfinally.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\tryfinally.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Snippets\PowerShell\while.snippet">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
     <None Include="Templates\Files\Script.Tests.ps1" />
