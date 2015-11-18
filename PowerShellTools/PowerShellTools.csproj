@@ -775,7 +775,6 @@
     <None Include="Resources\ErrorStatus.png" />
     <Resource Include="Project\Images\ProjectIcon.png" />
     <Resource Include="Project\Images\ScriptIcon.png" />
-    <Compile Include="Project\ProvideCodeExpansionsAttribute.cs" />
     <None Include="Resources\WarningIcon.ico" />
     <None Include="Resources\ErrorStatus.png" />
     <Content Include="Snippets\SnippetsIndex.xml">
