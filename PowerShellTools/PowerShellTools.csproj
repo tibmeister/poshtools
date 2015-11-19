@@ -334,6 +334,7 @@
     <Compile Include="LanguageService\BreakpointValidation\BreakpointPositionInfo.cs" />
     <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationHelper.cs" />
     <Compile Include="LanguageService\BreakpointValidation\BreakpointValidationService.cs" />
+    <Compile Include="LanguageService\TodoWindowTaskProvider.cs" />
     <Compile Include="Options\BitnessEventArgs.cs" />
     <Compile Include="Options\BitnessOption.cs" />
     <Compile Include="LanguageService\DropDownBar\EntryInfoEnums.cs" />
