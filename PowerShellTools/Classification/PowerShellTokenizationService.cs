@@ -6,6 +6,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudioTools;
@@ -30,12 +31,19 @@ namespace PowerShellTools.Classification
         private ITextSnapshot _lastSnapshot;
         private static bool _isBufferTokenizing;
         private static TodoWindowTaskProvider taskProvider;
+        private static ErrorListProvider errorListProvider;
+
         private static void CreateProvider()
         {
             if (taskProvider == null)
             {
                 taskProvider = new TodoWindowTaskProvider(PowerShellToolsPackage.Instance);
                 taskProvider.ProviderName = "To Do";
+            }
+
+            if (errorListProvider == null)
+            {
+                errorListProvider = new ErrorListProvider(PowerShellToolsPackage.Instance);
             }
         }
 
@@ -98,6 +106,7 @@ namespace PowerShellTools.Classification
                             {
                                 try
                                 {
+                                    UpdateErrorList(errorTags, currentSnapshot);
                                     UpdateTaskList(generatedTokens, currentSnapshot);
                                 }
                                 catch (Exception ex)
@@ -128,7 +137,32 @@ namespace PowerShellTools.Classification
             }
         }
 
-        private static void UpdateTaskList(Token[] generatedTokens, ITextSnapshot currentSnapshot)
+        private static void UpdateErrorList(IEnumerable<TagInformation<ErrorTag>> errorTags, ITextSnapshot currentSnapshot)
+        {
+            CreateProvider();
+            errorListProvider.Tasks.Clear();
+            foreach (var error in errorTags)
+            {
+                var errorTask = new ErrorTask();
+                errorTask.Text = error.Tag.ToolTipContent.ToString();
+                errorTask.ErrorCategory = TaskErrorCategory.Error;
+                errorTask.Line = error.Start;
+                errorTask.Document = currentSnapshot.TextBuffer.GetFilePath();
+                errorTask.Priority = TaskPriority.High;
+
+                errorListProvider.Tasks.Add(errorTask);
+                errorTask.Navigate += (sender, args) =>
+                {
+                    var dte = PowerShellToolsPackage.Instance.GetService(typeof(DTE)) as DTE;
+                    var document = dte.Documents.Open(currentSnapshot.TextBuffer.GetFilePath());
+                    document.Activate();
+                    var ts = dte.ActiveDocument.Selection as TextSelection;
+                    ts.GotoLine(error.Start, true);
+                };
+            }
+        }
+
+        private static void UpdateTaskList(IEnumerable<Token> generatedTokens, ITextSnapshot currentSnapshot)
         {
             CreateProvider();
             taskProvider.Tasks.Clear();
@@ -158,9 +192,7 @@ namespace PowerShellTools.Classification
 
                 taskProvider.Tasks.Add(errorTask);
             }
-
-            taskProvider.Show();
-
+            
             var taskList = PowerShellToolsPackage.Instance.GetService(typeof (SVsTaskList)) as IVsTaskList2;
             if (taskList == null)
             {
