@@ -88,7 +88,15 @@ namespace PowerShellTools.Classification
                                     bool isMandatoryDefined = arg.ArgumentName.Equals(MandatoryArgumentName, StringComparison.OrdinalIgnoreCase);
                                     if (isMandatoryDefined)
                                     {
-                                        isMandatory = ((VariableExpressionAst)arg.Argument).VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                        if (arg.Argument is VariableExpressionAst)
+                                        {
+                                            isMandatory = ((VariableExpressionAst)arg.Argument).VariablePath.UserPath.Equals("true", StringComparison.OrdinalIgnoreCase);
+                                        }
+
+                                        if (arg.Argument is ConstantExpressionAst)
+                                        {
+                                            isMandatory = Convert.ToBoolean(((ConstantExpressionAst) arg.Argument).Value);
+                                        }
                                     }
                                 }
                             }
