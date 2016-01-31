@@ -360,8 +360,6 @@ namespace PowerShellTools.DebugEngine
                     dialog.KeepName = true;
                     break;
                 case PSCredentialUIOptions.Default:
-                    dialog.ValidName = true;
-                    break;
                 case PSCredentialUIOptions.None:
                     break;
                 default:
