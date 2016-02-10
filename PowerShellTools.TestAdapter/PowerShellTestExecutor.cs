@@ -153,6 +153,9 @@ namespace PowerShellTools.TestAdapter
 
         private static string GetModulePath(string moduleName, string root)
         {
+            if (root == null)
+                return null;
+            
             // Default packages path for nuget.
             var packagesRoot = Path.Combine(root, "packages");
 
