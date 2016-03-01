@@ -661,7 +661,7 @@ namespace PowerShellTools.Intellisense
         {
             if (isInStringArea == null)
             {
-                isInStringArea = Utilities.IsInStringArea(_textView);
+                isInStringArea = Utilities.IsInStringArea(_textView) && !Utilities.IsInNestedExpression(_textView);
             }
             return isInStringArea;
         }

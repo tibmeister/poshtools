@@ -201,6 +201,34 @@ namespace PowerShellTools.Intellisense
             return String.IsNullOrWhiteSpace(lineText.Substring(caretInLine, lineText.Length - caretInLine));
         }
 
+        public static bool IsInNestedExpression(ITextView textView)
+        {
+            ITextBuffer currentActiveBuffer;
+            int currentPosition = Utilities.GetCurrentBufferPosition(textView, out currentActiveBuffer);
+            if (currentPosition < 0 || currentPosition > currentActiveBuffer.CurrentSnapshot.Length)
+            {
+                return false;
+            }
+            return Utilities.IsInNestedExpression(currentPosition, currentActiveBuffer);
+        }
+
+
+        public static bool IsInNestedExpression(int position, ITextBuffer buffer)
+        {
+            if (position < 0 || position > buffer.CurrentSnapshot.Length)
+            {
+                return false;
+            }
+
+            Ast ast;
+            if (buffer.Properties.TryGetProperty(BufferProperties.Ast, out ast) && ast != null)
+            {
+                return ast.FindAll(m => position >= m.Extent.StartOffset && position <= m.Extent.EndOffset, true).Any(m => m is SubExpressionAst);
+            }
+
+            return false;
+        }
+
         private static bool IsInCertainPSTokenTypesArea(int position, ITextBuffer buffer, EdgeTrackingMode edgeTrackingMode, params PSTokenType[] selectedPSTokenTypes )
         {
             if (position < 0 || position > buffer.CurrentSnapshot.Length)
