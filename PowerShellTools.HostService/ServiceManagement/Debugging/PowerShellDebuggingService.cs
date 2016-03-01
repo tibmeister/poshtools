@@ -926,14 +926,14 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
                     if (psVar != null)
                     {
-                        if (psVar.Value is PSObject &&
-                            !(((PSObject)psVar.Value).ImmediateBaseObject is PSCustomObject))
-                        {
-                            psVar = new PSVariable(
-                                (string)psVar.Name,
-                                ((PSObject)psVar.Value).ImmediateBaseObject,
-                                ScopedItemOptions.None);
-                        }
+                        //if (psVar.Value is PSObject &&
+                        //    !(((PSObject)psVar.Value).ImmediateBaseObject is PSCustomObject))
+                        //{
+                        //    psVar = new PSVariable(
+                        //        (string)psVar.Name,
+                        //        ((PSObject)psVar.Value).ImmediateBaseObject,
+                        //        ScopedItemOptions.None);
+                        //}
 
                         variables.Add(new Variable(psVar));
                     }
@@ -1076,6 +1076,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
 
             if (psVariable != null && !(psVariable is IEnumerable) && !(psVariable is PSObject))
             {
+                
+
                 var props = psVariable.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
                 foreach (var propertyInfo in props)
@@ -1136,6 +1138,7 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     object val;
                     try
                     {
+                        Runspace.DefaultRunspace = _runspace;
                         val = prop.Value;
                         var psObj = val as PSObject;
                         if (psObj != null && GetDebugScenario() != DebugScenario.Local && !(psObj.ImmediateBaseObject is string))
@@ -1151,13 +1154,13 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                     propsVariable.Add(
                         new Variable(
                             prop.Name,
-                            val.ToString(),
-                            val.GetType().ToString(),
+                            val == null ? String.Empty : val.ToString(),
+                            val == null ? prop.TypeNameOfValue : val.GetType().ToString(),
                             val is IEnumerable,
                             val is PSObject,
                             val is Enum));
 
-                    if (!val.GetType().IsPrimitive)
+                    if (val != null  && !val.GetType().IsPrimitive)
                     {
                         string key = string.Format("{0}\\{1}", varName, prop.Name);
                         _propVariables[key] = val;
