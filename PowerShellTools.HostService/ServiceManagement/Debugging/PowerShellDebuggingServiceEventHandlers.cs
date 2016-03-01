@@ -231,7 +231,8 @@ namespace PowerShellTools.HostService.ServiceManagement.Debugging
                 StringBuilder outputString = new StringBuilder();
                 foreach (PSObject obj in output)
                 {
-                    outputString.AppendLine(obj.ToString());
+                    if (obj != null)
+                        outputString.AppendLine(obj.ToString());
                 }
 
                 if (_debugOutput)
