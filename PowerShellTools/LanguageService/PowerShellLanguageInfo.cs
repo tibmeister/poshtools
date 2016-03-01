@@ -155,7 +155,7 @@ namespace PowerShellTools.LanguageService
         public int ValidateBreakpointLocation(IVsTextBuffer pBuffer, int iLine, int iCol, TextSpan[] pCodeSpan)
         {
             var dte2 = (DTE2)Package.GetGlobalService(typeof(SDTE));
-            if (dte2.ActiveDocument == null || !LanguageUtilities.IsPowerShellExecutableScriptFile(dte2.ActiveDocument.FullName))
+            if (dte2.ActiveDocument == null || !(LanguageUtilities.IsPowerShellExecutableScriptFile(dte2.ActiveDocument.FullName) || LanguageUtilities.IsPowerShellModuleFile(dte2.ActiveDocument.FullName)))
             {
                 return VSConstants.S_FALSE;
             }
