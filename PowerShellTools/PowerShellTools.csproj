@@ -786,6 +786,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <None Include="SignVsix.ps1" />
     <None Include="Templates\Files\Script.Test.ps1" />
     <None Include="Templates\Files\Script.psd1" />
     <None Include="Templates\Files\Script.psm1" />
@@ -921,4 +922,7 @@
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
+  <PropertyGroup>
+    <PostBuildEvent>PowerShell -ExecutionPolicy Unrestricted -File "$(ProjectDir)SignVsix.ps1" $(OutDir)\PowerShellTools.$(VSTarget).vsix</PostBuildEvent>
+  </PropertyGroup>
 </Project>
