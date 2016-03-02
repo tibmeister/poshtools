@@ -1,5 +1,10 @@
 ﻿param($VSIXPath)
 
+if ($Env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
+{
+    return
+}
+
 $ToolPath = (Join-Path $PSScriptRoot '..\packages\Microsoft.VSSDK.Vsixsigntool.14.1.24720\tools\vssdk\vsixsigntool.exe')
 
 Set-Location $PSScriptRoot
