@@ -1,6 +1,6 @@
 ﻿param($VSIXPath)
 
-if ($Env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
+if ($Env:APPVEYOR -ne 'True' -or $Env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
 {
     return
 }
