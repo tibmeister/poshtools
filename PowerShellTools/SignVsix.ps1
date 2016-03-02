@@ -3,4 +3,4 @@
 $ToolPath = (Join-Path $PSScriptRoot '..\packages\Microsoft.VSSDK.Vsixsigntool.14.1.24720\tools\vssdk\vsixsigntool.exe')
 
 Set-Location $PSScriptRoot
-Start-Process $ToolPath -ArgumentList "sign /f DigiCertNov2016.pfx /sha1 a16105fe72a347d6e5c3bd84e8285fd7c9457ef7 /p $Env:PoshTools_VSIX_CertPassword /t http://timestamp.digicert.com $VSIXPath" -NoNewWindow 
+Start-Process $ToolPath -ArgumentList "sign /f DigiCertNov2016.pfx /sha1 ‎62ce2356c213011cc8996c285a67a12663ad2c5c /p $Env:PoshTools_VSIX_CertPassword /v /t http://timestamp.digicert.com $VSIXPath" -NoNewWindow 
