@@ -922,4 +922,7 @@
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
   <Import Project="..\Build\ProjectAfter.settings" />
+  <PropertyGroup>
+    <PostBuildEvent>PowerShell -ExecutionPolicy Unrestricted -File "$(ProjectDir)SignVsix.ps1" $(OutDir)\PowerShellTools.$(VSTarget).vsix</PostBuildEvent>
+  </PropertyGroup>
 </Project>
