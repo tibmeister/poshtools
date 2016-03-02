@@ -1,5 +1,11 @@
 ﻿param($VSIXPath)
 
+#Only sign on release builds.
+if ([String]::IsNullOrEmpty($Env:APPVEYOR_REPO_TAG) -or $Env:APPVEYOR_REPO_TAG -eq 'false')
+{
+    return
+}
+
 $ToolPath = (Join-Path $PSScriptRoot '..\packages\Microsoft.VSSDK.Vsixsigntool.14.1.24720\tools\vssdk\vsixsigntool.exe')
 
 Set-Location $PSScriptRoot
