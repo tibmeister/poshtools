@@ -11,6 +11,8 @@ configuration: Release
 platform: Any CPU
 
 environment:
+  signing_code:
+    secure: j866O0PgCqwsA8OLhNTgnVbKhuNiu5pPWncpyhTe6xs=
   matrix:
   - VisualStudioVersion: 12.0
   - VisualStudioVersion: 14.0
